@@ -1,0 +1,12 @@
+version: "3"
+services:
+  social-actions:
+    image: luisalejandro/social-actions:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /home/luisalejandro/app
+    volumes:
+      - .:/home/luisalejandro/app
+    env_file:
+      - .env

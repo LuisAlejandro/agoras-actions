@@ -1,0 +1,2 @@
+atoma==0.0.17
+python-facebook-api==0.13.1
