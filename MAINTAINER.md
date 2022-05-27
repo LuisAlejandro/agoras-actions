@@ -29,7 +29,7 @@ leave uncommitted changes.
 
 8. Bump your version:
 
-        bumpversion --no-commit --new-version <release number> patch
+        bumpversion --no-commit <major, minor or patch>
 
 9. Update your changelog:
 
@@ -66,7 +66,7 @@ a description. Also pick a codename because it makes you cool.
 3. Code your hotfix.
 4. Bump your version:
 
-        bumpversion --no-commit --new-version <new version> patch
+        bumpversion --no-commit <major, minor or patch>
 
 5. Update your changelog:
 
