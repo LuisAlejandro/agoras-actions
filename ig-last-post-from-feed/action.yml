@@ -1,0 +1,13 @@
+name: tweet-with-media
+author: Luis Alejandro Martínez Faneyth
+description: GitHub Action for sending a tweet with an image
+
+runs:
+  using: docker
+  image: docker://ghcr.io/luisalejandro/sacli/sacli:latest
+  args:
+    - tweet-with-media
+
+branding:
+  icon: at-sign
+  color: blue

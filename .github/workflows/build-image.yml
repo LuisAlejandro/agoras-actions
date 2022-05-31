@@ -1,0 +1,27 @@
+name: Build and push sacli docker image
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '00 3 * * 2'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    if: github.repository == 'LuisAlejandro/social-actions'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Building docker image
+        run: docker build -t luisalejandro/sacli:latest -f Dockerfile.sacli .
+
+      - name: Login to Github Docker Registry
+        run: echo ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Pushing docker image
+        run: |
+          GITHUB_REPOSITORY=$(echo $GITHUB_REPOSITORY | tr '[A-Z]' '[a-z]')
+          docker tag luisalejandro/sacli:latest ghcr.io/$GITHUB_REPOSITORY/sacli
+          docker push ghcr.io/$GITHUB_REPOSITORY/sacli
