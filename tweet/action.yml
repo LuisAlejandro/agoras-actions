@@ -1,0 +1,50 @@
+name: tweet-with-media
+author: Luis Alejandro Martínez Faneyth
+description: GitHub Action for sending a tweet with an image
+inputs:
+  consumer-key:
+    description:
+    required: true
+  consumer-secret:
+    description:
+    required: true
+  oauth-token:
+    description:
+    required: true
+  oauth-secret:
+    description:
+    required: true
+  status-text:
+    description:
+    required: true
+  status-image-url-1:
+    description:
+    required: false
+  status-image-url-2:
+    description:
+    required: false
+  status-image-url-3:
+    description:
+    required: false
+  status-image-url-4:
+    description:
+    required: false
+
+runs:
+  using: docker
+  image: docker://ghcr.io/luisalejandro/social-actions/sacli:latest
+  args:
+    - tweet-with-media
+    - ${{ inputs.consumer-key }}
+    - ${{ inputs.consumer-secret }}
+    - ${{ inputs.oauth-token }}
+    - ${{ inputs.oauth-secret }}
+    - ${{ inputs.status-text }}
+    - ${{ inputs.status-image-url-1 }}
+    - ${{ inputs.status-image-url-2 }}
+    - ${{ inputs.status-image-url-3 }}
+    - ${{ inputs.status-image-url-4 }}
+
+branding:
+  icon: at-sign
+  color: blue

@@ -3,4 +3,8 @@ LABEL maintainer "Luis Alejandro Martínez Faneyth <luis@collagelabs.org>"
 
 RUN pip3 install https://github.com/LuisAlejandro/sacli/archive/develop.zip
 
-CMD ["/bin/bash"]
+ADD entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT "/entrypoint.sh"
+
+CMD "daemon"
