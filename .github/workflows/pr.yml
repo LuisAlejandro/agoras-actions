@@ -15,30 +15,10 @@ jobs:
     name: Build
     runs-on: ubuntu-22.04
     if: github.repository == 'LuisAlejandro/social-actions'
-    strategy:
-      matrix:
-        include:
-          - python-version: "3.8"
-          - python-version: "3.9"
-          - python-version: "3.10"
-          - python-version: "3.11.0-alpha.5"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-        with:
-          ref: develop
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Installing dependencies
-        run: pip install -r requirements.txt
-      # - name: Testing script
-      #   env:
-      #     FACEBOOK_ACCESS_TOKEN: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-      #     FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
-      #     FEED_URL: ${{ secrets.FEED_URL }}
-      #   run: python3 test.py
+      - run: echo "test"
 
   approve:
     name: Approve pull request
