@@ -14,7 +14,6 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-22.04
-    if: github.repository == 'LuisAlejandro/social-actions'
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -23,12 +22,11 @@ jobs:
   approve:
     name: Approve pull request
     runs-on: ubuntu-22.04
-    if: github.repository == 'LuisAlejandro/social-actions'
     needs: build
     steps:
       - name: Approve
         uses: hmarr/auto-approve-action@v2.2.1
-        if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
+        if: github.actor == 'dependabot[bot]'
         with:
           github-token: "${{ secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
       - name: Approve
@@ -40,12 +38,11 @@ jobs:
   merge:
     name: Merge pull request
     runs-on: ubuntu-22.04
-    if: github.repository == 'LuisAlejandro/social-actions'
     needs: approve
     steps:
       - name: Merge
         uses: actions/github-script@v6
-        if: github.actor == 'dependabot[bot]' || github.actor == 'dependabot-preview[bot]'
+        if: github.actor == 'dependabot[bot]'
         with:
           github-token: "${{ secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
           script: |

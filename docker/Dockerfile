@@ -1,7 +1,7 @@
 FROM dockershelf/python:3.10
 LABEL maintainer "Luis Alejandro Martínez Faneyth <luis@collagelabs.org>"
 
-RUN pip3 install https://github.com/LuisAlejandro/sacli/archive/develop.zip
+RUN pip3 install https://github.com/LuisAlejandro/agora/archive/develop.zip
 
 ADD entrypoint.sh /entrypoint.sh
 
