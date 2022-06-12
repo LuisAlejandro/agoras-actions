@@ -1,4 +1,4 @@
-name: Build and push agora docker image
+name: Build and push agoras docker image
 
 on:
   workflow_dispatch:
@@ -13,10 +13,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       - name: Building docker image
-        run: docker build -t luisalejandro/agora-actions:latest docker
+        run: docker build -t luisalejandro/agoras-actions:latest docker
       - name: Login to Github Docker Registry
         run: echo ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }} | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
       - name: Pushing docker image
         run: |
-          docker tag luisalejandro/agora-actions:latest ghcr.io/luisalejandro/agora-actions:latest
-          docker push ghcr.io/luisalejandro/agora-actions:latest
+          docker tag luisalejandro/agoras-actions:latest ghcr.io/luisalejandro/agoras-actions:latest
+          docker push ghcr.io/luisalejandro/agoras-actions:latest

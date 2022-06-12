@@ -7,7 +7,7 @@ if [ "${1}" == "bash" ]; then
     bash
 
 elif [ "${1}" == "tweet" ]; then
-    agora publish
+    agoras publish
         --network twitter \
         --action post \
         --twitter-consumer-key ${2} \
@@ -21,7 +21,7 @@ elif [ "${1}" == "tweet" ]; then
         --status-image-url-4 ${10}
 
 elif [ "${1}" == "tweet-like" ]; then
-    agora publish
+    agoras publish
         --network twitter \
         --action like \
         --twitter-consumer-key ${2} \
@@ -31,7 +31,7 @@ elif [ "${1}" == "tweet-like" ]; then
         --tweet-id ${6}
 
 elif [ "${1}" == "tweet-share" ]; then
-    agora publish
+    agoras publish
         --network twitter \
         --action share \
         --twitter-consumer-key ${2} \
@@ -41,7 +41,7 @@ elif [ "${1}" == "tweet-share" ]; then
         --tweet-id ${6}
 
 elif [ "${1}" == "tweet-last-post-from-feed" ]; then
-    agora publish
+    agoras publish
         --network twitter \
         --action last-from-feed \
         --twitter-consumer-key ${2} \
@@ -53,7 +53,7 @@ elif [ "${1}" == "tweet-last-post-from-feed" ]; then
         --post-lookback ${8}
 
 elif [ "${1}" == "tweet-random-post-from-feed" ]; then
-    agora publish
+    agoras publish
         --network twitter \
         --action random-from-feed \
         --twitter-consumer-key ${2} \
@@ -64,7 +64,7 @@ elif [ "${1}" == "tweet-random-post-from-feed" ]; then
         --max-post-age ${7}
 
 elif [ "${1}" == "tweet-spreadsheet-schedule" ]; then
-    agora publish
+    agoras publish
         --network twitter \
         --action schedule \
         --twitter-consumer-key ${2} \
@@ -74,6 +74,7 @@ elif [ "${1}" == "tweet-spreadsheet-schedule" ]; then
         --google-sheets-id ${6} \
         --google-sheets-client-email ${7} \
         --google-sheets-private-key ${8}
+
 else
     tail -f /dev/null
 fi
