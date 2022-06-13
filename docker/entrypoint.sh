@@ -6,7 +6,7 @@
 if [ "${1}" == "bash" ]; then
     bash
 
-elif [ "${1}" == "tweet" ]; then
+elif [ "${1}" == "new-tw-post" ]; then
     agoras publish
         --network twitter \
         --action post \
@@ -19,6 +19,42 @@ elif [ "${1}" == "tweet" ]; then
         --status-image-url-2 ${8} \
         --status-image-url-3 ${9} \
         --status-image-url-4 ${10}
+
+elif [ "${1}" == "new-fb-post" ]; then
+    agoras publish
+        --network facebook \
+        --action post \
+        --facebook-access-token ${2} \
+        --facebook-object-id ${3} \
+        --status-text ${4} \
+        --status-image-url-1 ${5} \
+        --status-image-url-2 ${6} \
+        --status-image-url-3 ${7} \
+        --status-image-url-4 ${9}
+
+elif [ "${1}" == "new-ig-post" ]; then
+    agoras publish
+        --network instagram \
+        --action post \
+        --instagram-access-token ${2} \
+        --instagram-object-id ${3} \
+        --status-text ${4} \
+        --status-image-url-1 ${5} \
+        --status-image-url-2 ${6} \
+        --status-image-url-3 ${7} \
+        --status-image-url-4 ${9}
+
+elif [ "${1}" == "new-li-post" ]; then
+    agoras publish
+        --network linkedin \
+        --action post \
+        --linkedin-username ${2} \
+        --linkedin-password ${3} \
+        --status-text ${4} \
+        --status-image-url-1 ${5} \
+        --status-image-url-2 ${6} \
+        --status-image-url-3 ${7} \
+        --status-image-url-4 ${9}
 
 elif [ "${1}" == "tweet-like" ]; then
     agoras publish

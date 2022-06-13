@@ -1,40 +1,40 @@
-name: tweet-with-media
+name: new-tw-post
 author: Luis Alejandro Martínez Faneyth
-description: GitHub Action for sending a tweet with an image
+description: GitHub Action for sending a tweet with option to add images.
 inputs:
   consumer-key:
-    description:
+    description: Twitter consumer key from twitter developer app.
     required: true
   consumer-secret:
-    description:
+    description: Twitter consumer secret from twitter developer app.
     required: true
   oauth-token:
-    description:
+    description: Twitter OAuth token from twitter developer app.
     required: true
   oauth-secret:
-    description:
+    description: Twitter OAuth secret from twitter developer app.
     required: true
   status-text:
-    description:
+    description: Text to be published.
     required: true
   status-image-url-1:
-    description:
+    description: First image URL to be published.
     required: false
   status-image-url-2:
-    description:
+    description: Second image URL to be published.
     required: false
   status-image-url-3:
-    description:
+    description: Third image URL to be published.
     required: false
   status-image-url-4:
-    description:
+    description: Fourth image URL to be published.
     required: false
 
 runs:
   using: docker
   image: docker://ghcr.io/luisalejandro/agoras-actions:latest
   args:
-    - tweet-with-media
+    - new-tw-post
     - ${{ inputs.consumer-key }}
     - ${{ inputs.consumer-secret }}
     - ${{ inputs.oauth-token }}
@@ -44,7 +44,3 @@ runs:
     - ${{ inputs.status-image-url-2 }}
     - ${{ inputs.status-image-url-3 }}
     - ${{ inputs.status-image-url-4 }}
-
-branding:
-  icon: at-sign
-  color: blue

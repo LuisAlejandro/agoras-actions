@@ -1,7 +1,7 @@
 version: "3"
 services:
-  social-actions:
-    image: luisalejandro/social-actions:latest
+  agoras-actions:
+    image: luisalejandro/agoras-actions:latest
     build:
       context: .
       dockerfile: Dockerfile
