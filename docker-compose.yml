@@ -5,8 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    working_dir: /home/luisalejandro/app
+    working_dir: /home/agoras-actions/app
     volumes:
-      - .:/home/luisalejandro/app
+      - .:/home/agoras-actions/app
     env_file:
       - .env
