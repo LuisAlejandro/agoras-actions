@@ -10,13 +10,13 @@ ADD requirements.txt requirements-dev.txt /root/
 RUN pip3 install -r /root/requirements.txt -r /root/requirements-dev.txt
 RUN rm -rf /root/requirements.txt /root/requirements-dev.txt
 
-RUN echo "luisalejandro ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/luisalejandro
-RUN useradd -ms /bin/bash luisalejandro
+RUN echo "agoras-actions ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/agoras-actions
+RUN useradd -ms /bin/bash agoras-actions
 
-USER luisalejandro
+USER agoras-actions
 
-RUN mkdir -p /home/luisalejandro/app
+RUN mkdir -p /home/agoras-actions/app
 
-WORKDIR /home/luisalejandro/app
+WORKDIR /home/agoras-actions/app
 
 CMD tail -f /dev/null

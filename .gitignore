@@ -58,8 +58,4 @@ docs/_build/
 # PyBuilder
 target/
 
-# virtualenv
-virtualenv/
-
-.env
-.vscode
+*.env

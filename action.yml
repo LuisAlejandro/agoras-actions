@@ -1,0 +1,104 @@
+name: agoras
+author: Luis Alejandro Martínez Faneyth
+description: Agoras helps publish, schedule, like, share and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
+inputs:
+  network:
+    description: Social network to use for publishing (default: ""). Must be one of: twitter, facebook, instagram or linkedin.
+    required: true
+  action:
+    description: Action to execute (default: ""). Must be one of: like, share, last-from-feed, random-from-feed, schedule, post, delete
+    required: true
+  twitter-consumer-key:
+    description: Twitter consumer key from twitter developer app.
+    required: false
+  twitter-consumer-secret:
+    description: Twitter consumer secret from twitter developer app.
+    required: false
+  twitter-oauth-token:
+    description: Twitter OAuth token from twitter developer app.
+    required: false
+  twitter-oauth-secret:
+    description: Twitter OAuth secret from twitter developer app.
+    required: false
+  tweet-id:
+    description: Twitter post ID to like, retweet or delete.
+    required: false
+  facebook-access-token:
+    description: Facebook access token from facebook app.
+    required: false
+  facebook-object-id:
+    description: Facebook ID of object where the post is going to be published.
+    required: false
+  facebook-post-id:
+    description: Facebook ID of post to be liked, shared or deleted.
+    required: false
+  facebook-profile-id:
+    description: Facebook ID of profile where a post will be shared.
+    required: false
+  instagram-access-token:
+    description: Facebook access token from facebook app.
+    required: false
+  instagram-object-id:
+    description: Instagram ID of profile where the post is going to be published.
+    required: false
+  instagram-post-id:
+    description: Instagram ID of post to be liked, shared or deleted.
+    required: false
+  linkedin-username:
+    description: Your LinkedIn username.
+    required: false
+  linkedin-password:
+    description: Your LinkedIn password.
+    required: false
+  linkedin-post-id:
+    description: LinkedIn post ID to like, retweet or delete.
+    required: false
+  status-text:
+    description: Text to be published.
+    required: false
+  status-image-url-1:
+    description: First image URL to be published.
+    required: false
+  status-image-url-2:
+    description: Second image URL to be published.
+    required: false
+  status-image-url-3:
+    description: Third image URL to be published.
+    required: false
+  status-image-url-4:
+    description: Fourth image URL to be published.
+    required: false
+  feed-url:
+    description: URL of public Atom feed to be parsed.
+    required: false
+  max-count:
+    description: Max number of new posts to be published at once.
+    required: false
+  post-lookback:
+    description: Only allow posts published
+    required: false
+  max-post-age:
+    description: Dont allow publishing of posts older than this number of days.
+    required: false
+  google-sheets-client-email:
+    description: A google console project client email corresponding to the private key.
+    required: false
+  google-sheets-private-key:
+    description: A google console project private key.
+    required: false
+  google-sheets-id:
+    description: The google sheets ID to read schedule entries.
+    required: false
+  google-sheets-name:
+    description: The name of the sheet where the schedule is.
+    required: false
+
+runs:
+  using: docker
+  image: docker://ghcr.io/luisalejandro/agoras-actions:latest
+  args:
+    - ${{ toJSON(inputs) }}
+
+branding:
+  icon: share-2
+  color: white
