@@ -3,10 +3,10 @@ author: Luis Alejandro Martínez Faneyth
 description: Agoras helps publish, schedule, like, share and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
 inputs:
   network:
-    description: Social network to use for publishing (default: ""). Must be one of: twitter, facebook, instagram or linkedin.
+    description: 'Social network to use for publishing (default: ""). Must be one of: twitter, facebook, instagram or linkedin.'
     required: true
   action:
-    description: Action to execute (default: ""). Must be one of: like, share, last-from-feed, random-from-feed, schedule, post, delete
+    description: 'Action to execute (default: ""). Must be one of: like, share, last-from-feed, random-from-feed, schedule, post, delete'
     required: true
   twitter-consumer-key:
     description: Twitter consumer key from twitter developer app.
