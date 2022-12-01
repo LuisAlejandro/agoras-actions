@@ -30,4 +30,6 @@ ADD entrypoint.py /entrypoint.py
 
 RUN chmod +x /entrypoint.py
 
-ENTRYPOINT "/entrypoint.py"
+ENTRYPOINT ["python3", "/entrypoint.py"]
+
+CMD ["daemon"]
