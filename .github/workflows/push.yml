@@ -22,7 +22,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Building docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
             tags: ghcr.io/luisalejandro/agoras-actions:latest
             file: docker/Dockerfile
