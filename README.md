@@ -2,13 +2,13 @@
 
 ---
 
-Current version: 0.1.0
+Current version: 1.1.1
 
 Agoras is a python utility that helps publish and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
 
 This repository contains the source code for the Agoras github actions. Its purpose is to serve as a wrapper for the application and provide a simple way to use it in your workflows.
 
-##### 🖥 Usage
+## Usage
 
 The name of the action is `LuisAlejandro/agoras-actions`, and it accepts inputs as parameters. The inputs that you'll need to provide depend on the action you want to execute. For example, to publish a post to facebook, you'll need to provide the access token for your facebook app, the page ID (object ID) where you want to publish the post, the text and the image URL. The full workflow file would look like this:
 
@@ -20,7 +20,7 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@0.1.0
+      - uses: LuisAlejandro/agoras-actions@1.1.1
         with:
           network: facebook
           action: post
@@ -40,7 +40,7 @@ The inputs are named after the command line arguments of the Agoras application.
 
 Also, You can find a list of all the available inputs for each action in the [Inputs](#-inputs) section.
 
-##### 📦 Outputs
+## Outputs
 
 This action has one output named `result` that contains the IDs of the posts that were published, liked, shared or deleted. An operation can result in one ID or multiple IDs. Multiple IDs are separated by a comma. An example of an operation that yields multiple IDs would be when publishing with actions `last-from-feed` or `schedule` and `max-count` is set to an integer greater than 1.
 
@@ -54,14 +54,14 @@ jobs:
   publish-like:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@0.1.0
+      - uses: LuisAlejandro/agoras-actions@1.1.1
         id: agoras
         with:
           network: linkedin
           action: post
           status-text: This is a test post
           linkedin-access-token: ZCNqH3bT0as2ZBB...
-      - uses: LuisAlejandro/agoras-actions@0.1.0
+      - uses: LuisAlejandro/agoras-actions@1.1.1
         with:
           network: linkedin
           action: like
@@ -69,7 +69,7 @@ jobs:
           linkedin-access-token: ZCNqH3bT0as2ZBB...
 ```
 
-##### 📦 Inputs
+## Inputs
 
 * `network`: Social network to use for publishing. Must be one of twitter, facebook, instagram or linkedin.
 * `action`: Action to execute. Must be one of like, share, last-from-feed, random-from-feed, schedule, post, delete.
