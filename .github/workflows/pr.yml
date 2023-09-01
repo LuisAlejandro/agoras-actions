@@ -11,48 +11,36 @@ on:
       - develop
 
 jobs:
-  build:
-    name: Build
+  test:
+    name: Test
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        network:
-          - twitter
-          - facebook
-          - instagram
-          - linkedin
-        action:
-          - post
-          - like
-          - share
-          - delete
-          - last-from-feed
-          - random-from-feed
-          - schedule
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      # - run: bash test.sh "${{ matrix.network }}-${{ matrix.action }}"
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
   approve:
     name: Approve pull request
     runs-on: ubuntu-22.04
-    needs: build
+    needs: test
+    if: github.actor == github.repository_owner || github.actor == 'dependabot[bot]'
     steps:
       - name: Approve
         uses: hmarr/auto-approve-action@v3.2.1
         with:
-          github-token: "${{ github.actor == 'LuisAlejandro' && secrets.GITHUB_TOKEN || secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
+          github-token: "${{ github.actor == github.repository_owner && secrets.GITHUB_TOKEN || secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
 
   merge:
     name: Merge pull request
     runs-on: ubuntu-22.04
     needs: approve
+    if: github.actor == github.repository_owner || github.actor == 'dependabot[bot]'
     steps:
       - name: Merge
         uses: actions/github-script@v6
         with:
-          github-token: "${{ github.actor == 'LuisAlejandro' && secrets.GITHUB_TOKEN || secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
+          github-token: "${{ github.actor == github.repository_owner && secrets.GITHUB_TOKEN || secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
           script: |
             await github.rest.pulls.merge({
               owner: context.repo.owner,

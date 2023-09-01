@@ -6,7 +6,7 @@ inputs:
     description: 'Social network to use for publishing (default: ""). Must be one of: twitter, facebook, instagram or linkedin.'
     required: true
   action:
-    description: 'Action to execute (default: ""). Must be one of: like, share, last-from-feed, random-from-feed, schedule, post, delete'
+    description: 'Action to execute (default: ""). Must be one of: like, share, last-from-feed, random-from-feed, schedule, post, delete.'
     required: true
   twitter-consumer-key:
     description: Twitter consumer key from twitter developer app.
@@ -21,7 +21,7 @@ inputs:
     description: Twitter OAuth secret from twitter developer app.
     required: false
   tweet-id:
-    description: Twitter post ID to like, retweet or delete.
+    description: Twitter post ID to like, share or delete.
     required: false
   facebook-access-token:
     description: Facebook access token from facebook app.
@@ -44,14 +44,11 @@ inputs:
   instagram-post-id:
     description: Instagram ID of post to be liked, shared or deleted.
     required: false
-  linkedin-username:
-    description: Your LinkedIn username.
-    required: false
-  linkedin-password:
-    description: Your LinkedIn password.
+  linkedin-access-token:
+    description: Your LinkedIn access token.
     required: false
   linkedin-post-id:
-    description: LinkedIn post ID to like, retweet or delete.
+    description: LinkedIn post ID to like, share or delete.
     required: false
   status-text:
     description: Text to be published.
@@ -93,11 +90,43 @@ inputs:
     description: The name of the sheet where the schedule is.
     required: false
 
+outputs:
+  output:
+    description: Output json of published posts
+
 runs:
   using: docker
-  image: docker://ghcr.io/luisalejandro/agoras-actions:latest
+  image: docker://ghcr.io/luisalejandro/agoras-actions:0.1.0
   args:
-    - ${{ toJSON(inputs) }}
+    - network="${{ inputs.network }}"
+    - action="${{ inputs.action }}"
+    - twitter-consumer-key="${{ inputs.twitter-consumer-key }}"
+    - twitter-consumer-secret="${{ inputs.twitter-consumer-secret }}"
+    - twitter-oauth-token="${{ inputs.twitter-oauth-token }}"
+    - twitter-oauth-secret="${{ inputs.twitter-oauth-secret }}"
+    - tweet-id="${{ inputs.tweet-id }}"
+    - facebook-access-token="${{ inputs.facebook-access-token }}"
+    - facebook-object-id="${{ inputs.facebook-object-id }}"
+    - facebook-post-id="${{ inputs.facebook-post-id }}"
+    - facebook-profile-id="${{ inputs.facebook-profile-id }}"
+    - instagram-access-token="${{ inputs.instagram-access-token }}"
+    - instagram-object-id="${{ inputs.instagram-object-id }}"
+    - instagram-post-id="${{ inputs.instagram-post-id }}"
+    - linkedin-access-token="${{ inputs.linkedin-access-token }}"
+    - linkedin-post-id="${{ inputs.linkedin-post-id }}"
+    - status-text="${{ inputs.status-text }}"
+    - status-image-url-1="${{ inputs.status-image-url-1 }}"
+    - status-image-url-2="${{ inputs.status-image-url-2 }}"
+    - status-image-url-3="${{ inputs.status-image-url-3 }}"
+    - status-image-url-4="${{ inputs.status-image-url-4 }}"
+    - feed-url="${{ inputs.feed-url }}"
+    - max-count="${{ inputs.max-count }}"
+    - post-lookback="${{ inputs.post-lookback }}"
+    - max-post-age="${{ inputs.max-post-age }}"
+    - google-sheets-client-email="${{ inputs.google-sheets-client-email }}"
+    - google-sheets-private-key="${{ inputs.google-sheets-private-key }}"
+    - google-sheets-id="${{ inputs.google-sheets-id }}"
+    - google-sheets-name="${{ inputs.google-sheets-name }}"
 
 branding:
   icon: share-2

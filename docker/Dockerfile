@@ -1,4 +1,4 @@
-FROM dockershelf/python:3.10
+FROM dockershelf/python:3.10-bookworm
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -24,12 +24,15 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.opencontainers.image.licenses="GPL-3.0" \
       maintainer="Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
-RUN pip3 install https://github.com/LuisAlejandro/agoras/archive/develop.zip
+RUN apt-get update && apt-get install jq
 
-ADD entrypoint.py /entrypoint.py
+RUN pip3 install agoras==0.1.0
 
-RUN chmod +x /entrypoint.py
+ADD entrypoint.sh /entrypoint.sh
+ADD execute.py /execute.py
 
-ENTRYPOINT ["python3", "/entrypoint.py"]
+RUN chmod +x /entrypoint.sh
 
-CMD ["daemon"]
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["test"]
