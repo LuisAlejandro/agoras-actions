@@ -2,7 +2,7 @@
 
 ---
 
-Current version: 0.1.0
+Current version: 1.1.1
 
 Agoras is a python utility that helps publish and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
 
@@ -20,7 +20,7 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@0.1.0
+      - uses: LuisAlejandro/agoras-actions@1.1.1
         with:
           network: facebook
           action: post
@@ -54,14 +54,14 @@ jobs:
   publish-like:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@0.1.0
+      - uses: LuisAlejandro/agoras-actions@1.1.1
         id: agoras
         with:
           network: linkedin
           action: post
           status-text: This is a test post
           linkedin-access-token: ZCNqH3bT0as2ZBB...
-      - uses: LuisAlejandro/agoras-actions@0.1.0
+      - uses: LuisAlejandro/agoras-actions@1.1.1
         with:
           network: linkedin
           action: like
