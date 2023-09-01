@@ -1,20 +1,29 @@
-FROM dockershelf/python:3.10
-LABEL maintainer "Luis Alejandro Martínez Faneyth <luis@collagelabs.org>"
+FROM dockershelf/python:3.10-bookworm
+LABEL maintainer "Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
+
+ARG UID=1000
+ARG GID=1000
 
 RUN apt-get update && \
-    apt-get install sudo python3.10-venv
+    apt-get install sudo python3.10-venv git make libyaml-dev
 
-RUN useradd -ms /bin/bash luisalejandro
-RUN echo "luisalejandro ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/luisalejandro
+RUN pip3 install https://github.com/LuisAlejandro/agoras/archive/develop.zip
 
-ADD requirements.txt /root/
-RUN pip install -r /root/requirements.txt
-RUN rm /root/requirements.txt
+RUN EXISTUSER=$(getent passwd | awk -F':' '$3 == '$UID' {print $1}') && \
+    [ -n "${EXISTUSER}" ] && deluser ${EXISTUSER} || true
 
-COPY entrypoint.sh /entrypoint.sh
-COPY socialactions /socialactions
-COPY action.py /action.py
+RUN EXISTGROUP=$(getent group | awk -F':' '$3 == '$GID' {print $1}') && \
+    [ -n "${EXISTGROUP}" ] && delgroup ${EXISTGROUP} || true
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN groupadd -g "${GID}" agoras || true
+RUN useradd -u "${UID}" -g "${GID}" -ms /bin/bash agoras
 
-CMD "daemon"
+RUN echo "agoras ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/agoras
+
+USER agoras
+
+RUN mkdir -p /home/agoras/app
+
+WORKDIR /home/agoras/app
+
+CMD tail -f /dev/null

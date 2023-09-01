@@ -1,184 +1,108 @@
-<p align='center'>
-  <img src="https://github.com/LuisAlejandro/fb-last-post-from-feed/blob/develop/branding/banner.svg">
-  <h3 align="center">Facebook last post from feed</h3>
-  <p align="center">GitHub Action for posting the latest entry from an atom feed to a facebook page</p>
-</p>
+![](https://raw.githubusercontent.com/LuisAlejandro/agoras-actions/develop/branding/banner.svg)
 
 ---
 
-Current version: 0.2.0
+Current version: 1.1.1
 
-## 🎒 Prep Work
-1. Get a facebook permanent access token (explained below) using a facebook account that owns the page where you want to post messages.
-2. Find the ID of the page that you want to post messages in (explained below).
-3. Find the atom feed URL that contains the posts that you wish to share.
+Agoras is a python utility that helps publish and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
 
-## 🖥 Workflow Usage
+This repository contains the source code for the Agoras github actions. Its purpose is to serve as a wrapper for the application and provide a simple way to use it in your workflows.
 
-Configure your workflow to use `LuisAlejandro/fb-last-post-from-feed@0.2.0`,
-and provide the atom feed URL you want to use as the `FEED_URL` env variable.
+## Usage
 
-Provide the access token for your Facebook app as the
-`FACEBOOK_ACCESS_TOKEN` env variable, set your facebook page ID as
-`FACEBOOK_PAGE_ID` (as secrets). Remember, to add secrets go to your repository
-`Settings` > `Secrets` > `Actions` > `New repository secret`
-for each secret.
-
-For example, create a file `.github/workflows/schedule.yml` on
-a github repository with the following content:
+The name of the action is `LuisAlejandro/agoras-actions`, and it accepts inputs as parameters. The inputs that you'll need to provide depend on the action you want to execute. For example, to publish a post to facebook, you'll need to provide the access token for your facebook app, the page ID (object ID) where you want to publish the post, the text and the image URL. The full workflow file would look like this:
 
 ```yml
-name: Publish last post of feed hourly
+name: Publish post to facebook
 on:
-  schedule:
-    - cron: '0 * * * *'
+  workflow_dispatch:
 jobs:
-  fbpost:
-    runs-on: ubuntu-20.04
+  publish:
+    runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/fb-last-post-from-feed@0.2.0
-        env:
-          FACEBOOK_ACCESS_TOKEN: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
-          FEED_URL: ${{ secrets.FEED_URL }}
+      - uses: LuisAlejandro/agoras-actions@1.1.1
+        with:
+          network: facebook
+          action: post
+          status-text: This is a test post
+          status-image-url-1: https://placekitten.com/200/300
+          facebook-access-token: ZCNqH3bT0as2ZBB...
+          facebook-object-id: 8974765243478...
 ```
 
-Publish your changes, activate your actions if disabled and enjoy.
+The inputs are named after the command line arguments of the Agoras application. You can read more about how to use the application (and subsequently, this action) in the following links:
 
-## ❗ Important notes
+* [General usage](https://agoras.readthedocs.io/en/latest/usage.html)
+* [Using Agoras with Twitter](https://agoras.readthedocs.io/en/latest/twitter.html)
+* [Using Agoras with Facebook](https://agoras.readthedocs.io/en/latest/facebook.html)
+* [Using Agoras with Instagram](https://agoras.readthedocs.io/en/latest/instagram.html)
+* [Using Agoras with LinkedIn](https://agoras.readthedocs.io/en/latest/linkedin.html)
 
-* The action is designed to publish a maximum of 1 post per batch, regardless of the actual
-number of new posts since the last run. You can alter this behavior by setting a `MAX_COUNT` env
-variable with your new value.
-* For this action to work properly, it should be run with an hourly cron (`0 * * * *`).
-The script is designed to look back and publish all posts (set by `MAX_COUNT`)
-since the **last hour**. If you want to change the frecuency of execution, modify the cron
-expression and then set a `POST_LOOKBACK` env variable with the cron interval in seconds. For example,
-for a `*/5 * * * *` cron (every 5 min), set env `POST_LOOKBACK: 300`.
+Also, You can find a list of all the available inputs for each action in the [Inputs](#-inputs) section.
 
-## 👥 How to get a Facebook permanent access token
+## Outputs
 
-Following the instructions laid out in Facebook's [extending page tokens documentation][2] I was able to get a page access token that does not expire.
+This action has one output named `result` that contains the IDs of the posts that were published, liked, shared or deleted. An operation can result in one ID or multiple IDs. Multiple IDs are separated by a comma. An example of an operation that yields multiple IDs would be when publishing with actions `last-from-feed` or `schedule` and `max-count` is set to an integer greater than 1.
 
-I suggest using the [Graph API Explorer][3] for all of these steps except where otherwise stated.
+To use the output, asign an `id` to the step where you are publishing and then reference the output in the step where you need the IDs like this `${{ steps.your-id-name.outputs.result }}`. An example of how to use the output would be:
 
-### 0. Create Facebook App
+```yml
+name: Publish post to linkedin and then like it
+on:
+  workflow_dispatch:
+jobs:
+  publish-like:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@1.1.1
+        id: agoras
+        with:
+          network: linkedin
+          action: post
+          status-text: This is a test post
+          linkedin-access-token: ZCNqH3bT0as2ZBB...
+      - uses: LuisAlejandro/agoras-actions@1.1.1
+        with:
+          network: linkedin
+          action: like
+          linkedin-post-id: ${{ steps.agoras.outputs.result }}
+          linkedin-access-token: ZCNqH3bT0as2ZBB...
+```
 
-**If you already have an app**, skip to step 1.
+## Inputs
 
-1. Go to [My Apps][4].
-2. Click "+ Add a New App".
-3. Setup a website app.
+* `network`: Social network to use for publishing. Must be one of twitter, facebook, instagram or linkedin.
+* `action`: Action to execute. Must be one of like, share, last-from-feed, random-from-feed, schedule, post, delete.
+* `twitter-consumer-key`: Twitter consumer key from twitter developer app.
+* `twitter-consumer-secret`: Twitter consumer secret from twitter developer app.
+* `twitter-oauth-token`: Twitter OAuth token from twitter developer app.
+* `twitter-oauth-secret`: Twitter OAuth secret from twitter developer app.
+* `tweet-id`: Twitter post ID to like, share or delete.
+* `facebook-access-token`: Facebook access token from facebook app.
+* `facebook-object-id`: Facebook ID of object where the post is going to be published.
+* `facebook-post-id`: Facebook ID of post to be liked, shared or deleted.
+* `facebook-profile-id`: Facebook ID of profile where a post will be shared.
+* `instagram-access-token`: Facebook access token from facebook app.
+* `instagram-object-id`: Instagram ID of profile where the post is going to be published.
+* `instagram-post-id`: Instagram ID of post to be liked, shared or deleted.
+* `linkedin-access-token`: Your LinkedIn access token.
+* `linkedin-post-id`: LinkedIn post ID to like, share or delete.
+* `status-text`: Text to be published.
+* `status-image-url-1`: First image URL to be published.
+* `status-image-url-2`: Second image URL to be published.
+* `status-image-url-3`: Third image URL to be published.
+* `status-image-url-4`: Fourth image URL to be published.
+* `feed-url`: URL of public Atom feed to be parsed.
+* `max-count`: Max number of new posts to be published at once.
+* `post-lookback`: Only allow posts published
+* `max-post-age`: Dont allow publishing of posts older than this number of days.
+* `google-sheets-client-email`: A google console project client email corresponding to the private key.
+* `google-sheets-private-key`: A google console project private key.
+* `google-sheets-id`: The google sheets ID to read schedule entries.
+* `google-sheets-name`: The name of the sheet where the schedule is.
 
-You don't need to change its permissions or anything. You just need an app that wont go away before you're done with your access token.
+## Made with 💖 and 🍔
 
-### 1. Get User Short-Lived Access Token
-
-1. Go to the [Graph API Explorer][3].
-3. Select the application you want to get the access token for (in the "Facebook App" drop-down menu, not the "My Apps" menu).
-4. In the "Add a Permission" drop-down, search and check "pages_manage_posts" and "pages_read_engagement".
-5. Click "Generate Access Token".
-6. Grant access from a Facebook account that has access to manage the target page. Note that if this user loses access the final, never-expiring access token will likely stop working.
-
-The token that appears in the "Access Token" field is your short-lived access token.
-
-### 2. Generate Long-Lived Access Token
-
-Following [these instructions][5] from the Facebook docs, make a GET request to
-
-> https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=**{app_id}**&client_secret=**{app_secret}**&fb_exchange_token=**{short_lived_token}**
-
-entering in your app's ID and secret and the short-lived token generated in the previous step.
-
-You **cannot use the Graph API Explorer**. For some reason it gets stuck on this request. I think it's because the response isn't JSON, but a query string. Since it's a GET request, you can just go to the URL in your browser.
-
-The response should look like this:
-
-> {"access_token":"**ABC123**","token_type":"bearer","expires_in":5183791}
-
-"ABC123" will be your long-lived access token. You can put it into the [Access Token Debugger][7] to verify. Under "Expires" it should have something like "2 months".
-
-### 3. Get User ID
-
-Using the long-lived access token, make a GET request to 
-
-> https://graph.facebook.com/me?access_token=**{long_lived_access_token}**
-
-The `id` field is your account ID. You'll need it for the next step.
-
-### 4. Get Permanent Page Access Token
-
-Make a GET request to
-
-> https://graph.facebook.com/**{account_id}**/accounts?access_token=**{long_lived_access_token}**
-
-The JSON response should have a `data` field under which is an array of items the user has access to. Find the item for the page you want the permanent access token from. The `access_token` field should have your permanent access token. Copy it and test it in the [Access Token Debugger][7]. Under "Expires" it should say "Never".
-
-[2]:https://developers.facebook.com/docs/facebook-login/access-tokens#extendingpagetokens
-[3]:https://developers.facebook.com/tools/explorer
-[4]:https://developers.facebook.com/apps/
-[5]:https://developers.facebook.com/docs/facebook-login/access-tokens#extending
-[6]:https://luckymarmot.com/paw
-[7]:https://developers.facebook.com/tools/debug/accesstoken
-
-## 👥 How to get a Facebook page ID
-
-To find your Page ID:
-
-1. From News Feed, click Pages in the left side menu.
-2. Click your Page name to go to your Page.
-3. Click About in the left column. If you don't see About in the left column, click See More.
-4. Scroll down to find your Page ID below More Info.
-
-## 🕵🏾 Hacking suggestions
-
-- You can test the script locally with Docker Compose:
-
-  * Install [Docker Community Edition](https://docs.docker.com/install/#supported-platforms) according with your operating system
-  * Install [Docker Compose](https://docs.docker.com/compose/install/) according with your operating system.
-
-      - [Linux](https://docs.docker.com/compose/install/#install-compose-on-linux-systems)
-      - [Mac](https://docs.docker.com/compose/install/#install-compose-on-macos)
-      - [Windows](https://docs.docker.com/compose/install/#install-compose-on-windows-desktop-systems)
-
-  * Install a git client.
-  * Fork this repo.
-  * Clone your fork of the repository into your local computer.
-  * Open a terminal and navigate to the newly created folder.
-  * Change to the `develop` branch.
-
-          git checkout develop
-
-  * Create a `.env` file with the content of the environment secrets as variables, like this (with real values):
-
-          FACEBOOK_ACCESS_TOKEN=xxxx
-          FACEBOOK_PAGE_ID=xxxx
-          FEED_URL=xxxx
-
-  * Execute the following command to create the docker image (first time only):
-
-          make image
-
-  * You can execute the publish script with this command:
-
-          make publish
-
-  * Or, alternatively, open a console where you can manually execute the script and debug any errors:
-
-          make console
-          python3 entrypoint.py
-
-  * You can stop the docker container with:
-  
-          make stop
-
-  * Or, destroy it completely:
-  
-          make destroy
-  
-
-## Made with :heart: and :hamburger:
-
-![Banner](https://github.com/LuisAlejandro/fb-last-post-from-feed/blob/develop/branding/author-banner.svg)
+![Banner](https://raw.githubusercontent.com/LuisAlejandro/LuisAlejandro/master/images/author-banner.svg)
 
 > Web [luisalejandro.org](http://luisalejandro.org/) · GitHub [@LuisAlejandro](https://github.com/LuisAlejandro) · Twitter [@LuisAlejandro](https://twitter.com/LuisAlejandro)

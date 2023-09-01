@@ -1,34 +1,36 @@
-name: Publish last post from feed
+name: Build and push agoras docker image
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
-      - develop
 
 jobs:
   build:
-    name: Sending last post
-    runs-on: ubuntu-20.04
-    if: github.repository == 'LuisAlejandro/fb-last-post-from-feed'
-    strategy:
-      matrix:
-        include:
-          - python-version: "3.10"
+    name: Build
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Github Packages registry
+        uses: docker/login-action@v2
         with:
-          ref: develop
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Building docker image
+        uses: docker/build-push-action@v4
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Installing dependencies
-        run: pip install -r requirements.txt
-      - name: Testing script
-        env:
-          FACEBOOK_ACCESS_TOKEN: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
-          FEED_URL: ${{ secrets.FEED_URL }}
-        run: python3 test.py
+          tags: ghcr.io/luisalejandro/agoras-actions:1.1.1
+          file: docker/Dockerfile
+          context: docker
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          load: false

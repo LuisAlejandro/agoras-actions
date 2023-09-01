@@ -58,7 +58,7 @@ docs/_build/
 # PyBuilder
 target/
 
-# virtualenv
+# Virtualenv
 virtualenv/
 
-.env
+*.env
