@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 1.1.2 (2023-09-03)
+
+### Fixed
+
+* Fixing ourput name. [Luis Alejandro Martínez Faneyth]
+
+
 ## 1.1.1 (2023-09-01)
 
 ### Changed
@@ -39,6 +46,8 @@
 
 
 ### Fixed
+
+* Fixin action.yml for publishing on marketplace. [Luis Alejandro Martínez Faneyth]
 
 * Fixing image build. [Luis Alejandro Martínez Faneyth]
 
