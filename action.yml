@@ -1,6 +1,6 @@
-name: agoras
+name: agoras-actions
 author: Luis Alejandro Martínez Faneyth
-description: Agoras helps publish, schedule, like, share and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
+description: Agoras helps publish, schedule, like, share and delete posts on the most popular social networks.
 inputs:
   network:
     description: 'Social network to use for publishing (default: ""). Must be one of: twitter, facebook, instagram or linkedin.'
@@ -91,12 +91,12 @@ inputs:
     required: false
 
 outputs:
-  output:
-    description: Output json of published posts
+  result:
+    description: Separated comma list of published post IDs.
 
 runs:
   using: docker
-  image: docker://ghcr.io/luisalejandro/agoras-actions:1.1.1
+  image: docker://ghcr.io/luisalejandro/agoras-actions:1.1.2
   args:
     - network="${{ inputs.network }}"
     - action="${{ inputs.action }}"
