@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 1.1.3 (2023-09-05)
+
+### Changed
+
+* Adding support for --status-link. [Luis Alejandro Martínez Faneyth]
+
+
 ## 1.1.2 (2023-09-03)
 
 ### Fixed
