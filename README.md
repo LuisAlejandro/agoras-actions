@@ -2,7 +2,7 @@
 
 ---
 
-Current version: 1.1.2
+Current version: 1.1.3
 
 Agoras is a python utility that helps publish and delete posts on the most popular social networks (twitter, facebook, instagram and linkedin).
 
@@ -20,7 +20,7 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.2
+      - uses: LuisAlejandro/agoras-actions@1.1.3
         with:
           network: facebook
           action: post
@@ -54,14 +54,14 @@ jobs:
   publish-like:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.2
+      - uses: LuisAlejandro/agoras-actions@1.1.3
         id: agoras
         with:
           network: linkedin
           action: post
           status-text: This is a test post
           linkedin-access-token: ZCNqH3bT0as2ZBB...
-      - uses: LuisAlejandro/agoras-actions@1.1.2
+      - uses: LuisAlejandro/agoras-actions@1.1.3
         with:
           network: linkedin
           action: like
@@ -73,6 +73,16 @@ jobs:
 
 * `network`: Social network to use for publishing. Must be one of twitter, facebook, instagram or linkedin.
 * `action`: Action to execute. Must be one of like, share, last-from-feed, random-from-feed, schedule, post, delete.
+* `status-text`: Text to be published.
+* `status-link`: Link to be published.
+* `status-image-url-1`: First image URL to be published.
+* `status-image-url-2`: Second image URL to be published.
+* `status-image-url-3`: Third image URL to be published.
+* `status-image-url-4`: Fourth image URL to be published.
+* `feed-url`: URL of public Atom feed to be parsed.
+* `max-count`: Max number of new posts to be published at once.
+* `post-lookback`: Only allow posts published
+* `max-post-age`: Dont allow publishing of posts older than this number of days.
 * `twitter-consumer-key`: Twitter consumer key from twitter developer app.
 * `twitter-consumer-secret`: Twitter consumer secret from twitter developer app.
 * `twitter-oauth-token`: Twitter OAuth token from twitter developer app.
@@ -87,19 +97,73 @@ jobs:
 * `instagram-post-id`: Instagram ID of post to be liked, shared or deleted.
 * `linkedin-access-token`: Your LinkedIn access token.
 * `linkedin-post-id`: LinkedIn post ID to like, share or delete.
-* `status-text`: Text to be published.
-* `status-image-url-1`: First image URL to be published.
-* `status-image-url-2`: Second image URL to be published.
-* `status-image-url-3`: Third image URL to be published.
-* `status-image-url-4`: Fourth image URL to be published.
-* `feed-url`: URL of public Atom feed to be parsed.
-* `max-count`: Max number of new posts to be published at once.
-* `post-lookback`: Only allow posts published
-* `max-post-age`: Dont allow publishing of posts older than this number of days.
 * `google-sheets-client-email`: A google console project client email corresponding to the private key.
 * `google-sheets-private-key`: A google console project private key.
 * `google-sheets-id`: The google sheets ID to read schedule entries.
 * `google-sheets-name`: The name of the sheet where the schedule is.
+
+## Examples
+
+* Publish post to LinkedIn using `status-link`, which embeds a preview of an URL in the post.
+
+```yml
+on:
+  workflow_dispatch:
+jobs:
+  publish-like:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@1.1.3
+        with:
+          network: linkedin
+          action: post
+          status-text: This is a test post
+          status-link: https://luisalejandro.org/blog/posts/nuevo-blog
+          linkedin-access-token: ZCNqH3bT0as2ZBB...
+```
+
+* Publish post to Facebook with multiple images.
+
+```yml
+on:
+  workflow_dispatch:
+jobs:
+  publish-like:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@1.1.3
+        with:
+          network: facebook
+          action: post
+          status-text: This is a test post
+          status-image-url-1: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
+          status-image-url-2: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
+          status-image-url-3: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
+          status-image-url-4: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
+          facebook-access-token: ZCNqH3bT0as2ZBB...
+          facebook-object-id: 8974765243478...
+```
+
+* Publish last post from feed to Facebook. This requires a cron to continuously check for new posts. The cron in this example runs every hour. `max-count` is set to 1 to only publish one post at a time. `post-lookback` is set to 3600 to only publish posts that are less than 1 hour old. This is to avoid publishing the same post multiple times.
+
+```yml
+on:
+  schedule:
+    - cron: 0 * * * *
+jobs:
+  publish-like:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@1.1.3
+        with:
+          network: facebook
+          action: last-from-feed
+          feed-url: https://luisalejandro.org/blog/posts/feed.xml
+          max-count: 1
+          post-lookback: 3600
+          facebook-access-token: ZCNqH3bT0as2ZBB...
+          facebook-object-id: 8974765243478...
+```
 
 ## Made with 💖 and 🍔
 

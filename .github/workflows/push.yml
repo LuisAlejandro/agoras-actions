@@ -27,7 +27,7 @@ jobs:
       - name: Building docker image
         uses: docker/build-push-action@v4
         with:
-          tags: ghcr.io/luisalejandro/agoras-actions:1.1.2
+          tags: ghcr.io/luisalejandro/agoras-actions:1.1.3
           file: docker/Dockerfile
           context: docker
           cache-from: type=gha

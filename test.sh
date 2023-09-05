@@ -4,6 +4,7 @@ python3 docker/execute.py \
     network="twitter" \
     action="post" \
     status-text="${STATUS_TEXT}" \
+    status-link="${STATUS_LINK}" \
     status-image-url-1="${STATUS_IMAGE_URL_1}" \
     status-image-url-2="${STATUS_IMAGE_URL_2}" \
     status-image-url-3="${STATUS_IMAGE_URL_3}" \
