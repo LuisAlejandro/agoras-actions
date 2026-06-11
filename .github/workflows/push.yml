@@ -1,14 +1,14 @@
-name: Build and push agoras docker image
+name: Push
 
 on:
-  workflow_dispatch:
   push:
     branches:
+      - develop
       - master
 
 jobs:
-  build:
-    name: Build
+  checks:
+    name: Repository Checks
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repo

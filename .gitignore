@@ -82,3 +82,17 @@ credentials.json
 # Rosey Agentic Environment
 docs/plans/
 docs/designs/
+rosey/brainstorms/
+rosey/plans/
+rosey/designs/
+rosey/solutions/
+rosey/insights/
+rosey/design-system/
+rosey/qa/
+rosey/deepening/
+rosey/agentic-env.json
+AGENTS.md
+DESIGN.md
+
+# Rosey Maintainer Tools
+rosey/maintainer-manifest.json
