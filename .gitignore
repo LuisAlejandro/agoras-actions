@@ -62,3 +62,23 @@ target/
 virtualenv/
 
 *.env
+.env.*
+!.env.example
+!.env.sample
+
+# Local MCP / IDE (tokens, API keys)
+.cursor/
+
+# Node (Rosey skill vendored deps)
+node_modules/
+
+# Keys and credential files
+*.pem
+*.p12
+*.pfx
+credentials.json
+.npmrc
+
+# Rosey Agentic Environment
+docs/plans/
+docs/designs/
