@@ -1,0 +1,1 @@
+*Agoras Actions* is a GitHub Action that wraps [Agoras](https://github.com/LuisAlejandro/agoras) for publishing, scheduling, liking, sharing, and deleting posts on Twitter, Facebook, Instagram, and LinkedIn. Use it in workflows to automate social media operations with credentials passed as action inputs.
