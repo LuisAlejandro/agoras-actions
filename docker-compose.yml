@@ -7,4 +7,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/home/agoras/app
+      - ../agoras:/home/agoras/agoras-src:ro
       - ~/Library/Caches/pip:/home/agoras/.cache/pip

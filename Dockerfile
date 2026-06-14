@@ -1,4 +1,4 @@
-FROM dockershelf/python:3.10-bookworm
+FROM dockershelf/python:3.12
 LABEL maintainer "Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
 ARG UID=1000
@@ -7,7 +7,7 @@ ARG GID=1000
 RUN apt-get update && \
     apt-get install sudo python3.10-venv git make libyaml-dev
 
-RUN pip3 install https://github.com/LuisAlejandro/agoras/archive/develop.zip
+# agoras is installed at dev time from the mounted sibling repo (see docker-compose.yml).
 
 RUN EXISTUSER=$(getent passwd | awk -F':' '$3 == '$UID' {print $1}') && \
     [ -n "${EXISTUSER}" ] && deluser ${EXISTUSER} || true

@@ -2,6 +2,7 @@
 # -*- makefile -*-
 
 SHELL = bash -e
+AGORAS_SRC ?= ../agoras
 all_ps_hashes = $(shell docker ps -q)
 img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
 exec_on_docker = docker compose \
@@ -13,6 +14,14 @@ image:
 	@docker compose -p agoras-actions -f docker-compose.yml build \
 		--build-arg UID=$(shell id -u) \
 		--build-arg GID=$(shell id -g)
+
+docker-image:
+	@docker buildx build \
+		--build-context agoras=$(AGORAS_SRC) \
+		-f docker/Dockerfile \
+		docker \
+		-t ghcr.io/luisalejandro/agoras-actions:2.0.0 \
+		--load
 
 start:
 	@if [ -z "$(img_hash)" ]; then\
@@ -32,7 +41,7 @@ virtualenv: start
 	@./virtualenv/bin/python3 -m pip install --upgrade pip
 	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
-	@./virtualenv/bin/python3 -m pip install https://github.com/LuisAlejandro/agoras/archive/develop.zip
+	@./virtualenv/bin/python3 -m pip install -e $(AGORAS_SRC)
 
 stop:
 	@docker-compose -p agoras-actions -f docker-compose.yml stop app

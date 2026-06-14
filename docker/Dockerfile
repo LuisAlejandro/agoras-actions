@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 FROM dockershelf/python:3.10-bookworm
 
 ARG BUILD_DATE
@@ -24,9 +25,15 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.opencontainers.image.licenses="GPL-3.0" \
       maintainer="Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
-RUN apt-get update && apt-get install jq
+RUN apt-get update && apt-get install -y --no-install-recommends jq \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install agoras==1.1.3
+# agoras 2.0 is not on PyPI yet. Pass the agoras repo as a named BuildKit context:
+#   docker buildx build --build-context agoras=../agoras -f docker/Dockerfile docker
+# When agoras 2.0 is published to PyPI, replace the COPY/RUN block with:
+#   RUN pip3 install "agoras>=2.0.0,<3.0.0"
+COPY --from=agoras . /tmp/agoras-source/
+RUN pip3 install /tmp/agoras-source && rm -rf /tmp/agoras-source
 
 ADD entrypoint.sh /entrypoint.sh
 ADD execute.py /execute.py
