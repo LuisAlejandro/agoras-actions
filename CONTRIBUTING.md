@@ -51,7 +51,7 @@ When proposing a feature, describe:
    make console
    ```
 
-The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `docker/execute.py`. See the [Agoras documentation](https://agoras.readthedocs.io/) for command-line behavior and supported networks.
+The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `docker/execute.py`. See the [Agoras documentation](https://agoras.luisalejandro.org/) for command-line behavior and supported networks.
 
 ## Quality Checks
 
