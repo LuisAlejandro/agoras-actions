@@ -1,18 +1,19 @@
-name: Build and push agoras docker image
+name: Push
 
 on:
-  workflow_dispatch:
   push:
     branches:
+      - develop
       - master
+      - "release/**"
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-22.04
+  checks:
+    name: Repository Checks
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout agoras-actions
-        uses: actions/checkout@v6
+      - name: Checkout repo
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -34,3 +35,12 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
           load: false
+
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-24.04
+    needs: [checks]
+    steps:
+      - name: Confirm all release checks passed
+        run: |
+          echo "Release gate passed for ${{ github.ref_name }}"

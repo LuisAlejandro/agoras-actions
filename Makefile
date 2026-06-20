@@ -2,15 +2,19 @@
 # -*- makefile -*-
 
 SHELL = bash -e
-all_ps_hashes = $(shell docker ps -q)
 img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
 exec_on_docker = docker compose \
 	-p agoras-actions -f docker-compose.yml exec \
 	--user agoras app
 
+# >>> rosey-maintainer:ops-docker BEGIN
+# Managed by rosey-maintainer-tools. Do not edit directly.
+
+PROJECT_NAME ?= agoras-actions
+all_ps_hashes = $(shell docker ps -q)
 
 image:
-	@docker compose -p agoras-actions -f docker-compose.yml build \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml build \
 		--build-arg UID=$(shell id -u) \
 		--build-arg GID=$(shell id -g)
 
@@ -25,8 +29,38 @@ start:
 	@if [ -z "$(img_hash)" ]; then\
 		make image;\
 	fi
-	@docker compose -p agoras-actions -f docker-compose.yml up \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml up \
 		--remove-orphans --no-build --detach
+
+stop:
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml stop
+
+down:
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
+		--remove-orphans
+
+destroy:
+	@echo
+	@echo "WARNING!!!"
+	@echo "This will stop and delete all containers, images and volumes related to this project."
+	@echo
+	@read -p "Press ctrl+c to abort or enter to continue." -n 1 -r
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
+		--rmi all --remove-orphans --volumes
+
+cataplum:
+	@echo
+	@echo "WARNING!!!"
+	@echo "This will stop and delete all containers, images and volumes present in your system."
+	@echo
+	@read -p "Press ctrl+c to abort or enter to continue." -n 1 -r
+	@if [ -n "$(all_ps_hashes)" ]; then\
+		docker kill $(shell docker ps -q);\
+	fi
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
+		--rmi all --remove-orphans --volumes
+	@docker system prune -a -f --volumes
+# <<< rosey-maintainer:ops-docker END
 
 console: start
 	@$(exec_on_docker) bash
@@ -40,32 +74,3 @@ virtualenv: start
 	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
 	@./virtualenv/bin/python3 -m pip install "agoras>=2.0.0,<3.0.0"
-
-stop:
-	@docker-compose -p agoras-actions -f docker-compose.yml stop app
-
-down:
-	@docker-compose -p agoras-actions -f docker-compose.yml down \
-		--remove-orphans
-
-destroy:
-	@echo
-	@echo "WARNING!!!"
-	@echo "This will stop and delete all containers, images and volumes related to this project."
-	@echo
-	@read -p "Press ctrl+c to abort or enter to continue." -n 1 -r
-	@docker compose -p agoras-actions -f docker-compose.yml down \
-		--rmi all --remove-orphans --volumes
-
-cataplum:
-	@echo
-	@echo "WARNING!!!"
-	@echo "This will stop and delete all containers, images and volumes present in your system."
-	@echo
-	@read -p "Press ctrl+c to abort or enter to continue." -n 1 -r
-	@if [ -n "$(all_ps_hashes)" ]; then\
-		docker kill $(shell docker ps -q);\
-	fi
-	@docker compose -p agoras-actions -f docker-compose.yml down \
-		--rmi all --remove-orphans --volumes
-	@docker system prune -a -f --volumes

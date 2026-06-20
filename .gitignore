@@ -81,6 +81,8 @@ credentials.json
 .npmrc
 
 # Rosey Agentic Environment
+docs/plans/
+docs/designs/
 rosey/brainstorms/
 rosey/plans/
 rosey/designs/
@@ -92,4 +94,6 @@ rosey/deepening/
 rosey/agentic-env.json
 AGENTS.md
 DESIGN.md
+
+# Rosey Maintainer Tools
 rosey/maintainer-manifest.json

@@ -11,12 +11,12 @@ on:
       - develop
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-22.04
+  checks:
+    name: Repository Checks
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout agoras-actions
-        uses: actions/checkout@v6
+      - name: Checkout repo
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -42,8 +42,8 @@ jobs:
 
   approve:
     name: Approve pull request
-    runs-on: ubuntu-22.04
-    needs: test
+    runs-on: ubuntu-24.04
+    needs: checks
     if: github.actor == github.repository_owner || github.actor == 'dependabot[bot]'
     steps:
       - name: Approve
@@ -53,7 +53,7 @@ jobs:
 
   merge:
     name: Merge pull request
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: approve
     if: github.actor == github.repository_owner || github.actor == 'dependabot[bot]'
     steps:
