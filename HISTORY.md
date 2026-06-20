@@ -1,6 +1,16 @@
 # Changelog
 
 
+## 2.0.0 (2026-06-08)
+
+### Changed
+
+* Native Agoras 2.0 CLI routing (platform commands + utils feed-publish/schedule-run).
+* Breaking input renames: `status-text` → `text`, `tweet-id` → `post-id`, OAuth credentials for Facebook/Instagram/LinkedIn.
+* Added platforms: discord, youtube, tiktok, threads, telegram, whatsapp.
+* Added actions: `video`, `authorize`, `template`.
+
+
 ## 1.1.3 (2023-09-05)
 
 ### Changed

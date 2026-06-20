@@ -15,10 +15,30 @@ jobs:
     name: Test
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repo
+      - name: Checkout agoras-actions
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Run execute.py unit tests
+        run: |
+          cd docker
+          python3 -m unittest test_execute.py -v
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v7
+        with:
+          tags: agoras-actions:pr-test
+          file: docker/Dockerfile
+          context: docker
+          load: true
+          push: false
+
+      - name: Smoke test container
+        run: docker run --rm agoras-actions:pr-test test
 
   approve:
     name: Approve pull request

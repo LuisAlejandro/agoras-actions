@@ -1,136 +1,292 @@
 name: agoras-actions
 author: Luis Alejandro Martínez Faneyth
-description: Agoras helps publish, schedule, like, share and delete posts on the most popular social networks.
+description: Agoras helps publish, schedule, like, share and delete posts on social networks (Agoras 2.0 native CLI).
 inputs:
   network:
-    description: 'Social network to use for publishing (default: ""). Must be one of: twitter, facebook, instagram or linkedin.'
+    description: 'Target platform. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x.'
     required: true
   action:
-    description: 'Action to execute (default: ""). Must be one of: like, share, last-from-feed, random-from-feed, schedule, post, delete.'
+    description: 'Action to execute. One of: post, like, share, delete, video, authorize, template, last-from-feed, random-from-feed, schedule.'
     required: true
-  twitter-consumer-key:
-    description: Twitter consumer key from twitter developer app.
+  text:
+    description: Text content to publish.
     required: false
-  twitter-consumer-secret:
-    description: Twitter consumer secret from twitter developer app.
+  link:
+    description: URL link to include in the post.
     required: false
-  twitter-oauth-token:
-    description: Twitter OAuth token from twitter developer app.
+  image-1:
+    description: First image URL.
     required: false
-  twitter-oauth-secret:
-    description: Twitter OAuth secret from twitter developer app.
+  image-2:
+    description: Second image URL.
     required: false
-  tweet-id:
-    description: Twitter post ID to like, share or delete.
+  image-3:
+    description: Third image URL.
     required: false
-  facebook-access-token:
-    description: Facebook access token from facebook app.
+  image-4:
+    description: Fourth image URL.
     required: false
-  facebook-object-id:
-    description: Facebook ID of object where the post is going to be published.
+  post-id:
+    description: Post ID for like, share, or delete actions (comma-separated for multiple).
     required: false
-  facebook-post-id:
-    description: Facebook ID of post to be liked, shared or deleted.
+  profile-id:
+    description: Profile ID for share actions (Facebook).
     required: false
-  facebook-profile-id:
-    description: Facebook ID of profile where a post will be shared.
+  video-url:
+    description: Video file URL for video actions.
     required: false
-  instagram-access-token:
-    description: Facebook access token from facebook app.
+  video-title:
+    description: Video title or caption.
     required: false
-  instagram-object-id:
-    description: Instagram ID of profile where the post is going to be published.
+  video-description:
+    description: Video description.
     required: false
-  instagram-post-id:
-    description: Instagram ID of post to be liked, shared or deleted.
+  video-type:
+    description: Video type (platform-specific).
     required: false
-  linkedin-access-token:
-    description: Your LinkedIn access token.
+  video-caption:
+    description: Video caption (Instagram).
     required: false
-  linkedin-post-id:
-    description: LinkedIn post ID to like, share or delete.
+  title:
+    description: Title (YouTube, TikTok).
     required: false
-  status-text:
-    description: Text to be published.
+  description:
+    description: Description (YouTube).
     required: false
-  status-link:
-    description: Link to be published.
+  category-id:
+    description: YouTube category ID.
     required: false
-  status-image-url-1:
-    description: First image URL to be published.
+  privacy:
+    description: Privacy setting (YouTube, TikTok).
     required: false
-  status-image-url-2:
-    description: Second image URL to be published.
-    required: false
-  status-image-url-3:
-    description: Third image URL to be published.
-    required: false
-  status-image-url-4:
-    description: Fourth image URL to be published.
+  keywords:
+    description: Comma-separated YouTube keywords.
     required: false
   feed-url:
-    description: URL of public Atom feed to be parsed.
+    description: RSS/Atom feed URL for feed-publish actions.
     required: false
   max-count:
-    description: Max number of new posts to be published at once.
+    description: Max posts to publish from feed at once.
     required: false
   post-lookback:
-    description: Only allow posts published
+    description: Only posts within last N seconds (feed-publish).
     required: false
   max-post-age:
-    description: Dont allow publishing of posts older than this number of days.
+    description: Max post age in days (feed-publish).
     required: false
-  google-sheets-client-email:
-    description: A google console project client email corresponding to the private key.
+  sheets-id:
+    description: Google Sheets document ID (schedule-run).
     required: false
-  google-sheets-private-key:
-    description: A google console project private key.
+  sheets-name:
+    description: Sheet tab name (schedule-run).
     required: false
-  google-sheets-id:
-    description: The google sheets ID to read schedule entries.
+  sheets-client-email:
+    description: Google service account email (schedule-run).
     required: false
-  google-sheets-name:
-    description: The name of the sheet where the schedule is.
+  sheets-private-key:
+    description: Google service account private key (schedule-run).
+    required: false
+  x-consumer-key:
+    description: X API consumer key.
+    required: false
+  x-consumer-secret:
+    description: X API consumer secret.
+    required: false
+  x-oauth-token:
+    description: X OAuth token.
+    required: false
+  x-oauth-secret:
+    description: X OAuth secret.
+    required: false
+  facebook-client-id:
+    description: Facebook OAuth client ID.
+    required: false
+  facebook-client-secret:
+    description: Facebook OAuth client secret.
+    required: false
+  facebook-app-id:
+    description: Facebook App ID.
+    required: false
+  facebook-object-id:
+    description: Facebook page or profile ID.
+    required: false
+  facebook-refresh-token:
+    description: Facebook OAuth refresh token (unattended CI).
+    required: false
+  instagram-client-id:
+    description: Instagram (Facebook) OAuth client ID.
+    required: false
+  instagram-client-secret:
+    description: Instagram (Facebook) OAuth client secret.
+    required: false
+  instagram-object-id:
+    description: Instagram business account ID.
+    required: false
+  instagram-refresh-token:
+    description: Instagram OAuth refresh token (unattended CI).
+    required: false
+  linkedin-client-id:
+    description: LinkedIn OAuth client ID.
+    required: false
+  linkedin-client-secret:
+    description: LinkedIn OAuth client secret.
+    required: false
+  linkedin-object-id:
+    description: LinkedIn user or organization ID.
+    required: false
+  linkedin-refresh-token:
+    description: LinkedIn OAuth refresh token (unattended CI).
+    required: false
+  discord-bot-token:
+    description: Discord bot token.
+    required: false
+  discord-server-name:
+    description: Discord server (guild) name.
+    required: false
+  discord-channel-name:
+    description: Discord channel name.
+    required: false
+  youtube-client-id:
+    description: YouTube (Google) OAuth client ID.
+    required: false
+  youtube-client-secret:
+    description: YouTube (Google) OAuth client secret.
+    required: false
+  youtube-refresh-token:
+    description: YouTube OAuth refresh token (unattended CI).
+    required: false
+  tiktok-client-key:
+    description: TikTok App client key.
+    required: false
+  tiktok-client-secret:
+    description: TikTok App client secret.
+    required: false
+  tiktok-username:
+    description: TikTok username.
+    required: false
+  tiktok-refresh-token:
+    description: TikTok OAuth refresh token (unattended CI).
+    required: false
+  threads-app-id:
+    description: Threads (Meta) App ID.
+    required: false
+  threads-app-secret:
+    description: Threads (Meta) App secret.
+    required: false
+  threads-refresh-token:
+    description: Threads OAuth refresh token (unattended CI).
+    required: false
+  threads-user-id:
+    description: Threads user ID (unattended CI).
+    required: false
+  telegram-bot-token:
+    description: Telegram bot token.
+    required: false
+  telegram-chat-id:
+    description: Telegram chat ID.
+    required: false
+  telegram-parse-mode:
+    description: 'Telegram parse mode: HTML, Markdown, MarkdownV2, or None.'
+    required: false
+  whatsapp-access-token:
+    description: WhatsApp Business API access token.
+    required: false
+  whatsapp-phone-number-id:
+    description: WhatsApp Business phone number ID.
+    required: false
+  whatsapp-business-account-id:
+    description: WhatsApp Business Account ID.
+    required: false
+  whatsapp-recipient:
+    description: WhatsApp recipient phone number (E.164).
+    required: false
+  whatsapp-template-name:
+    description: WhatsApp pre-approved template name.
+    required: false
+  whatsapp-template-language:
+    description: WhatsApp template language code (ISO 639-1).
+    required: false
+  whatsapp-template-components:
+    description: WhatsApp template components as JSON string.
     required: false
 
 outputs:
   result:
-    description: Separated comma list of published post IDs.
+    description: Comma-separated list of published or affected post IDs.
 
 runs:
   using: docker
-  image: docker://ghcr.io/luisalejandro/agoras-actions:1.1.3
+  image: docker://ghcr.io/luisalejandro/agoras-actions:2.0.0
   args:
     - network="${{ inputs.network }}"
     - action="${{ inputs.action }}"
-    - twitter-consumer-key="${{ inputs.twitter-consumer-key }}"
-    - twitter-consumer-secret="${{ inputs.twitter-consumer-secret }}"
-    - twitter-oauth-token="${{ inputs.twitter-oauth-token }}"
-    - twitter-oauth-secret="${{ inputs.twitter-oauth-secret }}"
-    - tweet-id="${{ inputs.tweet-id }}"
-    - facebook-access-token="${{ inputs.facebook-access-token }}"
-    - facebook-object-id="${{ inputs.facebook-object-id }}"
-    - facebook-post-id="${{ inputs.facebook-post-id }}"
-    - facebook-profile-id="${{ inputs.facebook-profile-id }}"
-    - instagram-access-token="${{ inputs.instagram-access-token }}"
-    - instagram-object-id="${{ inputs.instagram-object-id }}"
-    - instagram-post-id="${{ inputs.instagram-post-id }}"
-    - linkedin-access-token="${{ inputs.linkedin-access-token }}"
-    - linkedin-post-id="${{ inputs.linkedin-post-id }}"
-    - status-text="${{ inputs.status-text }}"
-    - status-link="${{ inputs.status-link }}"
-    - status-image-url-1="${{ inputs.status-image-url-1 }}"
-    - status-image-url-2="${{ inputs.status-image-url-2 }}"
-    - status-image-url-3="${{ inputs.status-image-url-3 }}"
-    - status-image-url-4="${{ inputs.status-image-url-4 }}"
+    - text="${{ inputs.text }}"
+    - link="${{ inputs.link }}"
+    - image-1="${{ inputs.image-1 }}"
+    - image-2="${{ inputs.image-2 }}"
+    - image-3="${{ inputs.image-3 }}"
+    - image-4="${{ inputs.image-4 }}"
+    - post-id="${{ inputs.post-id }}"
+    - profile-id="${{ inputs.profile-id }}"
+    - video-url="${{ inputs.video-url }}"
+    - video-title="${{ inputs.video-title }}"
+    - video-description="${{ inputs.video-description }}"
+    - video-type="${{ inputs.video-type }}"
+    - video-caption="${{ inputs.video-caption }}"
+    - title="${{ inputs.title }}"
+    - description="${{ inputs.description }}"
+    - category-id="${{ inputs.category-id }}"
+    - privacy="${{ inputs.privacy }}"
+    - keywords="${{ inputs.keywords }}"
     - feed-url="${{ inputs.feed-url }}"
     - max-count="${{ inputs.max-count }}"
     - post-lookback="${{ inputs.post-lookback }}"
     - max-post-age="${{ inputs.max-post-age }}"
-    - google-sheets-client-email="${{ inputs.google-sheets-client-email }}"
-    - google-sheets-private-key="${{ inputs.google-sheets-private-key }}"
-    - google-sheets-id="${{ inputs.google-sheets-id }}"
-    - google-sheets-name="${{ inputs.google-sheets-name }}"
+    - sheets-id="${{ inputs.sheets-id }}"
+    - sheets-name="${{ inputs.sheets-name }}"
+    - sheets-client-email="${{ inputs.sheets-client-email }}"
+    - sheets-private-key="${{ inputs.sheets-private-key }}"
+    - x-consumer-key="${{ inputs.x-consumer-key }}"
+    - x-consumer-secret="${{ inputs.x-consumer-secret }}"
+    - x-oauth-token="${{ inputs.x-oauth-token }}"
+    - x-oauth-secret="${{ inputs.x-oauth-secret }}"
+    - facebook-client-id="${{ inputs.facebook-client-id }}"
+    - facebook-client-secret="${{ inputs.facebook-client-secret }}"
+    - facebook-app-id="${{ inputs.facebook-app-id }}"
+    - facebook-object-id="${{ inputs.facebook-object-id }}"
+    - facebook-refresh-token="${{ inputs.facebook-refresh-token }}"
+    - instagram-client-id="${{ inputs.instagram-client-id }}"
+    - instagram-client-secret="${{ inputs.instagram-client-secret }}"
+    - instagram-object-id="${{ inputs.instagram-object-id }}"
+    - instagram-refresh-token="${{ inputs.instagram-refresh-token }}"
+    - linkedin-client-id="${{ inputs.linkedin-client-id }}"
+    - linkedin-client-secret="${{ inputs.linkedin-client-secret }}"
+    - linkedin-object-id="${{ inputs.linkedin-object-id }}"
+    - linkedin-refresh-token="${{ inputs.linkedin-refresh-token }}"
+    - discord-bot-token="${{ inputs.discord-bot-token }}"
+    - discord-server-name="${{ inputs.discord-server-name }}"
+    - discord-channel-name="${{ inputs.discord-channel-name }}"
+    - youtube-client-id="${{ inputs.youtube-client-id }}"
+    - youtube-client-secret="${{ inputs.youtube-client-secret }}"
+    - youtube-refresh-token="${{ inputs.youtube-refresh-token }}"
+    - tiktok-client-key="${{ inputs.tiktok-client-key }}"
+    - tiktok-client-secret="${{ inputs.tiktok-client-secret }}"
+    - tiktok-username="${{ inputs.tiktok-username }}"
+    - tiktok-refresh-token="${{ inputs.tiktok-refresh-token }}"
+    - threads-app-id="${{ inputs.threads-app-id }}"
+    - threads-app-secret="${{ inputs.threads-app-secret }}"
+    - threads-refresh-token="${{ inputs.threads-refresh-token }}"
+    - threads-user-id="${{ inputs.threads-user-id }}"
+    - telegram-bot-token="${{ inputs.telegram-bot-token }}"
+    - telegram-chat-id="${{ inputs.telegram-chat-id }}"
+    - telegram-parse-mode="${{ inputs.telegram-parse-mode }}"
+    - whatsapp-access-token="${{ inputs.whatsapp-access-token }}"
+    - whatsapp-phone-number-id="${{ inputs.whatsapp-phone-number-id }}"
+    - whatsapp-business-account-id="${{ inputs.whatsapp-business-account-id }}"
+    - whatsapp-recipient="${{ inputs.whatsapp-recipient }}"
+    - whatsapp-template-name="${{ inputs.whatsapp-template-name }}"
+    - whatsapp-template-language="${{ inputs.whatsapp-template-language }}"
+    - whatsapp-template-components="${{ inputs.whatsapp-template-components }}"
 
 branding:
   icon: share-2

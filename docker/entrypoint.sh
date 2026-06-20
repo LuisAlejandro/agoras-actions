@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Exit early if there are errors and be verbose
-set -exuo pipefail
+# Do not use -x: action args include platform credentials and would leak to logs.
+set -euo pipefail
 
 if [ "${1}" == "test" ]; then
     echo "Container built successfully, exiting"

@@ -7,7 +7,7 @@ ARG GID=1000
 RUN apt-get update && \
     apt-get install sudo python3.10-venv git make libyaml-dev
 
-RUN pip3 install https://github.com/LuisAlejandro/agoras/archive/develop.zip
+RUN pip3 install "agoras>=2.0.0,<3.0.0"
 
 RUN EXISTUSER=$(getent passwd | awk -F':' '$3 == '$UID' {print $1}') && \
     [ -n "${EXISTUSER}" ] && deluser ${EXISTUSER} || true
