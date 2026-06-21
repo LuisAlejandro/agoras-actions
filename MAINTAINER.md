@@ -1,94 +1,67 @@
-## Maintainer Notes
+# Maintainer Guide
 
-If you are reading this, you probably forgot how to release a new version. Keep
-reading.
+Rosey maintainer workflow for Agoras. Each step is a skill invocation; details
+live in the skill files under `.cursor/skills/`.
 
-### Making a new release
+## Workflow overview
 
-1. Start your git flow workflow:
+For each feature:
 
-        git flow init
+1. `rosey-lfg-code` — brainstorm requirements, create a plan, implement on a
+   feature branch (via `rosey-brainstorm`, `rosey-plan`, `rosey-work`).
+2. `rosey-lfg-quality` — QA review, lint/build after fixes, open or update PR
+   (via `rosey-qa`, `rosey-pr`). PRs target `develop`; CI auto-merges when
+   configured.
 
-2. Create a new milestone in GitHub. Plan the features of your new release. Assign
-existing bugs to your new milestone.
-3. Start a new feature:
+Repeat 1–2 for every feature in the release.
 
-        git flow feature start <feature name>
+When `develop` is ready to ship:
 
-4. Code, code and code. More coding. Mess it up several times. Push to feature
-branch. Watch Travis go red. Write unit tests. Watch Travis go red again. Don't
-leave uncommitted changes.
-5. Finish your feature:
+3. `rosey-release` — publish a **release** (patch, minor, or major). Five gates:
+   (1) Docker preflight (`make lint`, `make format`, `make test`;
+   on Python repos `make test` runs coverage),
+   (2) `release/<version>` branch pushed,
+   (3) `push.yml` CI on the release branch,
+   (4) tag and GitHub release,
+   (5) `release.yml` after publish (lint/tests on the release tag) —
+   `rosey-release` confirms the workflow passed. Patch releases may attach a
+   retroactive milestone. On failure, rolls back with `VERSION=<version> make undo-release`
+   and halts. Optional post-bump hooks live in `.bumpversion.cfg` under
+   `[rosey-maintainer]`.
 
-        git flow feature finish <feature name>
+## Skill reference
 
-6. Repeat 3-5 for every other feature you have planned for this release.
-7. When you're done with the features and ready to publish, start a new release:
+### `rosey-lfg-code`
 
-        git flow release start <release number>
+Autonomous code stage: requirements → plan → implementation and lint/build.
+Emits `ROSEY_LFG_QUALITY_HANDOFF` for the quality stage.
 
-8. Bump your version:
+### `rosey-lfg-quality`
 
-        bumpversion --no-commit <major, minor or patch>
+Autonomous quality stage: QA autofix, post-review lint, PR create/update.
+Emits `<promise>DONE</promise>` when the PR is ready. Does not merge or
+publish releases.
 
-9. Update your changelog:
+### `rosey-release`
 
-        gitchangelog > HISTORY.md
+Release only: `patch` (default), `minor`, or `major`. Invoke from clean
+`develop`. Arguments: `[mode:interactive|mode:non-interactive] [patch|minor|major]`.
 
-10. Commit your changes to version files and changelog:
+## Prerequisites (checked by release script)
 
-        git commit -aS -m "Updating Changelog and version."
+- `git`, `git flow`, `docker` (daemon running), `make`, `gh` (authenticated),
+  `bumpversion`, `gpg`
+- `user.signingkey` configured with secret key available locally
+- Clean working tree (no modified or untracked files)
 
-11. Delete the tag made by bumpversion:
+## GitHub branch protection (configure once)
 
-        git tag -d <release number>
+**`develop`** — require PR; status checks: Linting, Integration Tests, Unit
+tests, Documentation, Finish.
 
-12. Finish your release:
+**`master`** — restrict pushes; disallow force pushes.
 
-        git flow release finish -s -p <release number>
+**`release/*`** — Push workflow runs; script waits for Release Gate before tagging.
 
-13. Push your tags:
-
-        git push --tags
-
-14. Draft a new release in GitHub (based on the new version tag) and include
-a description. Also pick a codename because it makes you cool.
-15. Close the milestone in GitHub.
-16. Write about your new version in your blog. Tweet it, post it on facebook.
-
-### Making a new hotfix
-
-1. Create a new milestone in GitHub. Assign existing bugs to your new milestone.
-2. Start a new hotfix:
-
-        git flow hotfix start <new version>
-
-3. Code your hotfix.
-4. Bump your version:
-
-        bumpversion --no-commit <major, minor or patch>
-
-5. Update your changelog:
-
-        gitchangelog > HISTORY.md
-
-6. Commit your changes to version files and changelog:
-
-        git commit -aS -m "Updating Changelog and version."
-
-7. Delete the tag made by bumpversion:
-
-        git tag -d <new version>
-
-8. Finish your hotfix:
-
-        git flow hotfix finish -s -p <new version>
-
-9. Push your tags:
-
-        git push --tags
-
-10. Draft a new release in GitHub (based on the new version tag) and include
-a description. Don't change the codename if it is a hotfix.
-11. Close the milestone in GitHub.
-12. Write about your new version in your blog. Tweet it, post it on facebook.
+**Version tags** — restrict creation to maintainers; prevent tag deletion except
+by admins.

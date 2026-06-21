@@ -53,9 +53,25 @@ When proposing a feature, describe:
 
 The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `docker/execute.py`. See the [Agoras documentation](https://agoras.luisalejandro.org/) for command-line behavior and supported networks.
 
+To build the GitHub Action runtime image locally:
+
+```bash
+make docker-image
+```
+
 ## Quality Checks
 
-This repository does not define `make lint` or `make test`. For integration testing against live credentials, use:
+Before opening a pull request, run:
+
+```bash
+make lint
+make format
+make test
+```
+
+These targets run inside the development container via tox (`lint`, `format` check, and `coverage`).
+
+For integration testing against live credentials, use:
 
 ```bash
 make functional-test

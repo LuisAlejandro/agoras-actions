@@ -1,11 +1,12 @@
-FROM dockershelf/python:3.10-bookworm
-LABEL maintainer "Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
+FROM dockershelf/python:3.12
+LABEL maintainer="Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
 ARG UID=1000
 ARG GID=1000
 
-RUN apt-get update && \
-    apt-get install sudo python3.10-venv git make libyaml-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    sudo python3-venv git make libyaml-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install "agoras==1.1.3"
 
@@ -17,13 +18,12 @@ RUN EXISTGROUP=$(getent group | awk -F':' '$3 == '$GID' {print $1}') && \
 
 RUN groupadd -g "${GID}" agoras || true
 RUN useradd -u "${UID}" -g "${GID}" -ms /bin/bash agoras
-
 RUN echo "agoras ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/agoras
 
 USER agoras
 
-RUN mkdir -p /home/agoras/app
+RUN mkdir -p /home/agoras/app /home/agoras/.cache/pip
 
 WORKDIR /home/agoras/app
 
-CMD tail -f /dev/null
+CMD ["tail", "-f", "/dev/null"]

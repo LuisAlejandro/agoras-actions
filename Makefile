@@ -2,13 +2,24 @@
 # -*- makefile -*-
 
 SHELL = bash -e
+VERSION_TYPE ?= patch
+APP_NAME ?= agoras-actions
 img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
 exec_on_docker = docker compose \
-	-p agoras-actions -f docker-compose.yml exec \
+	-p agoras-actions -f docker-compose.yml exec -T \
 	--user agoras app
 
+lint: start
+	@$(exec_on_docker) tox -e lint
+
+format: start
+	@$(exec_on_docker) bash -c 'pip install --quiet autopep8 && autopep8 --in-place --recursive --aggressive --aggressive docker'
+
+test: start
+	@$(exec_on_docker) tox -e coverage
+
 # >>> rosey-maintainer:ops-docker BEGIN
-# Managed by rosey-maintainer-tools. Do not edit directly.
+# Managed by rosey-maintainer-tools 0.2.0. Do not edit directly.
 
 PROJECT_NAME ?= agoras-actions
 all_ps_hashes = $(shell docker ps -q)
@@ -17,13 +28,6 @@ image:
 	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml build \
 		--build-arg UID=$(shell id -u) \
 		--build-arg GID=$(shell id -g)
-
-docker-image:
-	@docker buildx build \
-		-f docker/Dockerfile \
-		docker \
-		-t ghcr.io/luisalejandro/agoras-actions:1.1.3 \
-		--load
 
 start:
 	@if [ -z "$(img_hash)" ]; then\
@@ -74,3 +78,45 @@ virtualenv: start
 	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
 	@./virtualenv/bin/python3 -m pip install "agoras==1.1.3"
+
+docker-image:
+	@docker build -f docker/Dockerfile \
+		--build-arg VERSION=$$(grep '^current_version' .bumpversion.cfg | awk '{print $$3}') \
+		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+		--build-arg VCS_REF=$$(git rev-parse --short HEAD 2>/dev/null || echo local) \
+		-t luisalejandro/agoras-actions:latest \
+		docker/
+
+.PHONY: lint format test console functional-test virtualenv docker-image
+
+# >>> rosey-maintainer:ops-release BEGIN
+# Managed by rosey-maintainer-tools 0.2.0. Do not edit directly.
+
+release:
+	@./scripts/release.sh $${VERSION_TYPE}
+
+release-patch:
+	@./scripts/release.sh patch $${APP_NAME}
+
+release-minor:
+	@./scripts/release.sh minor $${APP_NAME}
+
+release-major:
+	@./scripts/release.sh major $${APP_NAME}
+
+
+release-preflight: start
+
+
+	@make lint
+
+	@make format
+
+	@make test
+
+
+
+undo-release:
+	@: "$${VERSION:?Set VERSION=x.y.z before running make undo-release}"
+	@VERSION=$${VERSION} ./scripts/rollback.sh release
+# <<< rosey-maintainer:ops-release END

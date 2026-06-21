@@ -56,12 +56,17 @@ Documentation:
 * [Agoras migration guide](https://agoras.luisalejandro.org/en/latest/migration.html)
 * [agoras-actions v2 migration](docs/MIGRATION-v2.md)
 * [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html)
+* [Contributing](CONTRIBUTING.md)
 
 ### Building the Docker image locally
+
+Build the GitHub Action runtime image (from `docker/Dockerfile`):
 
 ```bash
 make docker-image
 ```
+
+For day-to-day development (lint, test, console), use the root `Dockerfile` via `make image` and `make start`.
 
 ## Outputs
 
