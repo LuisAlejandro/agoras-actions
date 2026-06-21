@@ -1,14 +1,29 @@
 # Changelog
 
 
-## Unreleased
+## 2.0.0 (2026-06-21)
 
-### Changed
+### Other
 
-* Native Agoras 2.0 CLI routing (platform commands + utils feed-publish/schedule-run).
-* Breaking input renames: `status-text` → `text`, `tweet-id` → `post-id`, OAuth credentials for Facebook/Instagram/LinkedIn.
-* Added platforms: discord, youtube, tiktok, threads, telegram, whatsapp.
-* Added actions: `video`, `authorize`, `template`.
+* Fixing build. [Luis Alejandro Martínez Faneyth]
+
+* Improving maintainer files. [Luis Alejandro Martínez Faneyth]
+
+* Preparing release. [Luis Alejandro Martínez Faneyth]
+
+* Preparing release. [Luis Alejandro Martínez Faneyth]
+
+* Chore: fleet release parity — gates, dependabot, hotfix removal. [Luis Alejandro Martínez Faneyth]
+
+* Apply rosey maintainer fleet sync. [Luis Alejandro Martínez Faneyth]
+
+* Adding bumpversion config. [Luis Alejandro Martínez Faneyth]
+
+* Release Agoras Actions 2.0 with PyPI-based installs and native CLI routing. [Luis Alejandro Martínez Faneyth]
+
+* Improving gitignore. [Luis Alejandro Martínez Faneyth]
+
+* Update keepalive.yml. [Luis Alejandro]
 
 
 ## 1.1.3 (2023-09-05)

@@ -77,7 +77,7 @@ virtualenv: start
 	@./virtualenv/bin/python3 -m pip install --upgrade pip
 	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
-	@./virtualenv/bin/python3 -m pip install "agoras==1.1.3"
+	@./virtualenv/bin/python3 -m pip install "agoras==2.0.0"
 
 docker-image:
 	@docker build -f docker/Dockerfile \

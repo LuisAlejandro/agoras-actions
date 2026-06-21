@@ -2,9 +2,9 @@
 
 ---
 
-Current version: 1.1.3
+Current version: 2.0.0
 
-> **Breaking change:** Version 2.0 aligns with [Agoras 2.0](https://agoras.luisalejandro.org/en/latest/migration.html). Input names, authentication, and CLI routing changed. See [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) before upgrading from 1.x. Each agoras-actions release pins the matching Agoras PyPI version (e.g. `@1.1.3` uses `agoras==1.1.3`).
+> **Breaking change:** Version 2.0 aligns with [Agoras 2.0](https://agoras.luisalejandro.org/en/latest/migration.html). Input names, authentication, and CLI routing changed. See [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) before upgrading from 1.x. Each agoras-actions release pins the matching Agoras PyPI version (e.g. `@2.0.0` uses `agoras==2.0.0`).
 
 Agoras is a Python utility for publishing and managing posts on social networks (X, Facebook, Instagram, LinkedIn, Discord, YouTube, TikTok, Threads, Telegram, and WhatsApp).
 
@@ -24,7 +24,7 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
+      - uses: LuisAlejandro/agoras-actions@2.0.0
         with:
           network: facebook
           action: post
@@ -39,7 +39,7 @@ jobs:
 ### Post to X
 
 ```yml
-- uses: LuisAlejandro/agoras-actions@1.1.3
+- uses: LuisAlejandro/agoras-actions@2.0.0
   with:
     network: x
     action: post
@@ -73,7 +73,7 @@ For day-to-day development (lint, test, console), use the root `Dockerfile` via 
 The `result` output contains comma-separated post IDs from publish, like, share, or delete operations.
 
 ```yml
-- uses: LuisAlejandro/agoras-actions@1.1.3
+- uses: LuisAlejandro/agoras-actions@2.0.0
   id: agoras
   with:
     network: linkedin
@@ -83,7 +83,7 @@ The `result` output contains comma-separated post IDs from publish, like, share,
     linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
     linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
     linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
-- uses: LuisAlejandro/agoras-actions@1.1.3
+- uses: LuisAlejandro/agoras-actions@2.0.0
   with:
     network: linkedin
     action: like
@@ -127,7 +127,7 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
+      - uses: LuisAlejandro/agoras-actions@2.0.0
         with:
           network: linkedin
           action: post
@@ -149,7 +149,7 @@ jobs:
   feed:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
+      - uses: LuisAlejandro/agoras-actions@2.0.0
         with:
           network: x
           action: last-from-feed
