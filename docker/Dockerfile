@@ -27,7 +27,7 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
 RUN apt-get update && apt-get install -y --no-install-recommends jq \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install "agoras==1.1.3"
+RUN pip3 install "agoras==2.0.0"
 
 ADD entrypoint.sh /entrypoint.sh
 ADD execute.py /execute.py
