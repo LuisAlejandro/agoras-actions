@@ -58,6 +58,31 @@ Documentation:
 * [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html)
 * [Contributing](CONTRIBUTING.md)
 
+## Local development
+
+Build and start the development container:
+
+```bash
+make image
+make start
+```
+
+Run quality checks (release preflight uses the same targets):
+
+```bash
+make lint
+make format
+make test
+```
+
+Open a shell in the container:
+
+```bash
+make console
+```
+
+Copy `.env.example` to `secrets.env` and fill in credentials for `make functional-test` when exercising live APIs.
+
 ### Building the Docker image locally
 
 Build the GitHub Action runtime image (from `docker/Dockerfile`):
@@ -66,7 +91,7 @@ Build the GitHub Action runtime image (from `docker/Dockerfile`):
 make docker-image
 ```
 
-For day-to-day development (lint, test, console), use the root `Dockerfile` via `make image` and `make start`.
+The root `Dockerfile` powers day-to-day development (`make image`, `make start`, `make lint`, `make test`).
 
 ## Outputs
 

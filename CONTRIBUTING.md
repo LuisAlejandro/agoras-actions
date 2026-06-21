@@ -69,7 +69,7 @@ make format
 make test
 ```
 
-These targets run inside the development container via tox (`lint`, `format` check, and `coverage`).
+These targets run inside the development container via tox (`lint`, autopep8 formatting, and `coverage`).
 
 For integration testing against live credentials, use:
 
@@ -83,8 +83,9 @@ CI runs repository checks on pull requests to `develop` and on pushes to `develo
 
 ## Pull Request Guidelines
 
-- Keep changes focused on one concern.
+- Include tests for behavior changes when applicable.
 - Update documentation when user-facing behavior changes (README, `action.yml` inputs, or workflow examples).
+- Keep changes focused on one concern.
 - Link related issues when applicable.
 - Note any manual testing you performed, especially for workflow or Docker changes.
 
