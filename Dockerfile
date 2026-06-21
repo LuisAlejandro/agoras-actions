@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip3 install "agoras==1.1.3"
 
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+RUN pip3 install -r /tmp/requirements-dev.txt && rm /tmp/requirements-dev.txt
+
 RUN EXISTUSER=$(getent passwd | awk -F':' '$3 == '$UID' {print $1}') && \
     [ -n "${EXISTUSER}" ] && deluser ${EXISTUSER} || true
 
