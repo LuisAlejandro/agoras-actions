@@ -19,7 +19,7 @@ test: start
 	@$(exec_on_docker) tox -e coverage
 
 # >>> rosey-maintainer:ops-docker BEGIN
-# Managed by rosey-maintainer-tools 0.2.0. Do not edit directly.
+# Managed by rosey-maintainer-tools 0.3.0. Do not edit directly.
 
 PROJECT_NAME ?= agoras-actions
 all_ps_hashes = $(shell docker ps -q)
@@ -90,7 +90,7 @@ docker-image:
 .PHONY: lint format test console functional-test virtualenv docker-image
 
 # >>> rosey-maintainer:ops-release BEGIN
-# Managed by rosey-maintainer-tools 0.2.0. Do not edit directly.
+# Managed by rosey-maintainer-tools 0.3.0. Do not edit directly.
 
 release:
 	@./scripts/release.sh $${VERSION_TYPE}
