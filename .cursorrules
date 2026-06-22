@@ -1,0 +1,53 @@
+# Cursor rules
+
+## Cursor Cloud specific instructions
+
+### What this repo is
+`agoras-actions` is a **Docker-based GitHub Action** that wraps the `agoras` social-media CLI
+(pinned to `agoras==2.0.0`). There is **no web server, database, or long-running service** —
+it is a CLI-in-a-container batch tool. "Running the app" means building the action image and
+running its entrypoint, or invoking `docker/execute.py`.
+
+The only repo-owned source is `docker/execute.py` (parses `key=value` GitHub Action inputs,
+normalizes/translates them into an `agoras` CLI argv) and `docker/entrypoint.sh`. The actual
+social-network logic lives in the external `agoras` PyPI package.
+
+### Dependencies / setup
+- The startup update script installs `requirements-dev.txt` (`tox`, `flake8`, `coverage`,
+  `autopep8`) plus `agoras==2.0.0` into the **user site** (`~/.local`).
+- Console scripts (`tox`, `flake8`, `autopep8`, `coverage`, `agoras`) live in `~/.local/bin`,
+  which is added to `PATH` via `~/.bashrc`. If a command is "not found", run
+  `export PATH="$HOME/.local/bin:$PATH"`.
+
+### Lint / test / format (no Docker needed)
+The `Makefile` targets (`make lint`, `make test`, `make format`) run these same commands
+**inside a docker compose container**. On this VM you can run them directly on the host, which
+is faster and needs no daemon:
+- Lint: `tox -e lint` (or `flake8 docker`)
+- Format check: `tox -e format` (or `autopep8 --diff --recursive --aggressive --aggressive docker`)
+- Tests + coverage: `tox -e coverage` (or `PYTHONPATH=docker coverage run --source execute -m unittest discover -s docker -p 'test_*.py'`)
+
+### Docker (needed only for `make` targets and building the action image)
+- Docker Engine is pre-installed in the snapshot, but **there is no systemd**, so the daemon is
+  not auto-started. Start it manually once per session, e.g. in a tmux session:
+  `sudo dockerd > /tmp/dockerd.log 2>&1 &` (the `ubuntu` user is in the `docker` group).
+- Daemon is configured for `fuse-overlayfs` with the containerd snapshotter disabled
+  (`/etc/docker/daemon.json`) because the host kernel lacks full overlay2 support; iptables is
+  set to `iptables-legacy`. Do not "fix" these.
+- Build the action runtime image: `make docker-image`.
+- Smoke test the image: `docker run --rm luisalejandro/agoras-actions:latest` →
+  prints `Container built successfully, exiting`.
+
+### Known issue (product code, not environment)
+With the pinned `agoras==2.0.0` (whose console entry point is `agoras.cli.main:main`),
+`docker/execute.py` does `from agoras.cli import main; main(argv)`. That imports the
+`agoras.cli.main` **module** (not the function), so any real invocation
+(e.g. `docker run ... network=x action=post ...` or `python3 docker/execute.py ...`) fails with
+`TypeError: 'module' object is not callable`. This reproduces identically inside the built
+container, so it is a pre-existing code bug, not an environment problem. The repo-owned
+translation logic itself (parse → normalize → build argv) works and is covered by the unit
+tests; only the final hand-off to the `agoras` CLI is broken.
+
+### Live functional test
+`make functional-test` (`test.sh`) posts to real social networks and requires credentials in a
+`secrets.env` file (template: `.env.example`). Skip unless real test credentials are provided.
