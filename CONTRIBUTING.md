@@ -79,7 +79,7 @@ make functional-test
 
 That target runs `test.sh` inside the Docker container. Only run it with test credentials you are comfortable using in a development environment.
 
-CI runs repository checks on pull requests to `develop` and on pushes to `develop` and `master`.
+CI runs repository checks on pull requests to `develop` (see `.github/workflows/pr.yml`). Pushes to `develop`, `master`, and `release/**` run the separate push workflow for image publishing.
 
 ## Pull Request Guidelines
 
