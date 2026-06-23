@@ -2,6 +2,7 @@
 # -*- makefile -*-
 
 SHELL = bash -e
+export BASH_ENV := $(HOME)/.bash_env
 VERSION_TYPE ?= patch
 APP_NAME ?= agoras-actions
 img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
@@ -73,7 +74,7 @@ functional-test: start
 	@$(exec_on_docker) bash test.sh
 
 virtualenv: start
-	@python3 -m venv --clear ./virtualenv
+	@python3 -m venv --clear --copies ./virtualenv
 	@./virtualenv/bin/python3 -m pip install --upgrade pip
 	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
