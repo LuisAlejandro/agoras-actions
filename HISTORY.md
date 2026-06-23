@@ -1,6 +1,25 @@
 # Changelog
 
 
+## 2.0.1 (2026-06-23)
+
+### Other
+
+* Chore: sync maintainer ops and inline post_bump_commands parser. [Luis Alejandro Martínez Faneyth]
+
+* Chore: sync maintainer release scripts and CI workflows. [Luis Alejandro Martínez Faneyth]
+
+* Chore: maintainer sync toolkit 0.4.3. [Luis Alejandro Martínez Faneyth]
+
+* Update. [Luis Alejandro Martínez Faneyth]
+
+* Chore: maintainer sync toolkit 0.4.2 — PR CI + auto-merge. [Luis Alejandro Martínez Faneyth]
+
+* Add .cursorrules with Cursor Cloud dev environment instructions. [Cursor Agent]
+
+* Chore: sync PR auto-merge, CodeQL PR gate, and maintainer files from rosey-maintain. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.0.0 (2026-06-21)
 
 ### Other
