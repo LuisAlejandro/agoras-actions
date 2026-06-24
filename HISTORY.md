@@ -1,6 +1,19 @@
 # Changelog
 
 
+## 2.0.2 (2026-06-24)
+
+### Other
+
+* Fixing misalignment versions bug. [Luis Alejandro Martínez Faneyth]
+
+* Fix: restore GHCR 1.1.3 image and guard push version pins. [Luis Alejandro Martínez Faneyth]
+
+* Chore: export BASH_ENV in Makefile for bash recipe env. [Luis Alejandro Martínez Faneyth]
+
+* Fix: one-line post_bump_commands for bumpversion compatibility. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.0.1 (2026-06-23)
 
 ### Other
