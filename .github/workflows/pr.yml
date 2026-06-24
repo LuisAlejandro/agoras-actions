@@ -18,10 +18,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
 
-      - name: Run execute.py unit tests
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install tox and run unit tests
         run: |
-          cd docker
-          python3 -m unittest test_execute.py -v
+          python3 -m pip install -r requirements-dev.txt
+          tox -e coverage
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4

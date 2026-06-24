@@ -2,8 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from unittest.mock import patch
 
-from execute import build_argv, normalize_network, parse_payload, translate_params
+from execute import (
+    build_argv,
+    execute,
+    normalize_network,
+    parse_payload,
+    run_from_payload,
+    translate_params,
+    validate_action,
+)
 
 
 class TestNormalizeNetwork(unittest.TestCase):
@@ -70,6 +79,80 @@ class TestParsePayload(unittest.TestCase):
     def test_skips_empty_values(self):
         result = parse_payload(['network=x', 'action=post', 'text='])
         self.assertNotIn('text', result)
+
+
+class TestExecute(unittest.TestCase):
+    @patch('agoras.cli.main.main')
+    def test_execute_delegates_to_agoras_main(self, mock_main):
+        execute('x', 'post', {
+            'network': 'x',
+            'action': 'post',
+            'x-consumer-key': 'key',
+            'text': 'hello',
+        })
+        mock_main.assert_called_once()
+        argv = mock_main.call_args[0][0]
+        self.assertEqual(argv[:2], ['x', 'post'])
+        self.assertIn('--consumer-key', argv)
+        self.assertIn('key', argv)
+        self.assertIn('--text', argv)
+        self.assertIn('hello', argv)
+        self.assertNotIn('--x-consumer-key', argv)
+
+
+class TestRunFromPayload(unittest.TestCase):
+    @patch('agoras.cli.main.main')
+    def test_run_from_payload_github_style_quoted_args(self, mock_main):
+        run_from_payload([
+            'network=x',
+            'action=post',
+            'text="hello"',
+            'x-consumer-key="key"',
+        ])
+        mock_main.assert_called_once()
+        argv = mock_main.call_args[0][0]
+        self.assertEqual(argv[:2], ['x', 'post'])
+        self.assertIn('--text', argv)
+        self.assertIn('hello', argv)
+        self.assertIn('--consumer-key', argv)
+        self.assertIn('key', argv)
+
+
+class TestValidateAction(unittest.TestCase):
+    def test_invalid_action_raises(self):
+        with self.assertRaisesRegex(ValueError, 'not-real'):
+            validate_action('not-real')
+
+
+class TestLoopableActions(unittest.TestCase):
+    @patch('agoras.cli.main.main')
+    def test_like_invokes_main_per_post_id(self, mock_main):
+        run_from_payload([
+            'network=x',
+            'action=like',
+            'post-id="a,b,c"',
+            'x-consumer-key="key"',
+        ])
+        self.assertEqual(mock_main.call_count, 3)
+        post_ids = [call.args[0][call.args[0].index('--post-id') + 1]
+                    for call in mock_main.call_args_list]
+        self.assertEqual(post_ids, ['a', 'b', 'c'])
+
+    @patch('agoras.cli.main.main')
+    def test_loopable_without_post_id_raises(self, mock_main):
+        with self.assertRaisesRegex(ValueError, 'post-id is required'):
+            run_from_payload([
+                'network=x',
+                'action=like',
+                'x-consumer-key="key"',
+            ])
+        mock_main.assert_not_called()
+
+
+class TestAgorasImportSmoke(unittest.TestCase):
+    def test_agoras_main_is_callable(self):
+        from agoras.cli.main import main
+        self.assertTrue(callable(main))
 
 
 if __name__ == '__main__':
