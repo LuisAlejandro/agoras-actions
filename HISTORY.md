@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 2.0.4 (2026-06-24)
+
+### Other
+
+* Fix agoras CLI hand-off import in execute.py. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.0.2 (2026-06-24)
 
 ### Other
