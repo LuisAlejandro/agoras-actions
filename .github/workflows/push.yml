@@ -25,6 +25,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Verify Docker build pins match package version
+        run: |
+          VERSION=$(awk -F' = ' '/^current_version/{print $2}' .bumpversion.cfg)
+          if ! grep -Fq "ghcr.io/luisalejandro/agoras-actions:${VERSION}" .github/workflows/push.yml; then
+            echo "::error::push.yml image tag must be :${VERSION} (see .bumpversion.cfg)"
+            exit 1
+          fi
+          if ! grep -Fq "agoras==${VERSION}\"" docker/Dockerfile; then
+            echo "::error::docker/Dockerfile must pin agoras==${VERSION}"
+            exit 1
+          fi
+          if ! grep -Fq normalize_network docker/execute.py; then
+            echo "::error::docker/execute.py must use the 2.x platform-first router"
+            exit 1
+          fi
+
       - name: Building docker image
         uses: docker/build-push-action@v7
         with:
