@@ -1,6 +1,13 @@
 # Changelog
 
 
+## 2.0.5 (2026-06-24)
+
+### Other
+
+* Add execute handoff regression tests and wire agoras into tox CI. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.0.4 (2026-06-24)
 
 ### Other
