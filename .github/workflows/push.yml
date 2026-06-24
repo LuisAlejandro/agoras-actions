@@ -15,25 +15,16 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to Github Packages registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Verify Docker build pins match package version
         run: |
           VERSION=$(awk -F' = ' '/^current_version/{print $2}' .bumpversion.cfg)
-          if ! grep -Fq "ghcr.io/luisalejandro/agoras-actions:${VERSION}" .github/workflows/push.yml; then
-            echo "::error::push.yml image tag must be :${VERSION} (see .bumpversion.cfg)"
-            exit 1
-          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           if ! grep -Fq "agoras==${VERSION}\"" docker/Dockerfile; then
             echo "::error::docker/Dockerfile must pin agoras==${VERSION}"
+            exit 1
+          fi
+          if ! grep -Fq "ghcr.io/luisalejandro/agoras-actions:${VERSION}" action.yml; then
+            echo "::error::action.yml image tag must be :${VERSION} (see .bumpversion.cfg)"
             exit 1
           fi
           if ! grep -Fq normalize_network docker/execute.py; then
@@ -41,15 +32,34 @@ jobs:
             exit 1
           fi
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to Github Packages registry
+        if: startsWith(github.ref, 'refs/heads/release/')
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Refuse to overwrite existing GHCR tag
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          if docker manifest inspect "ghcr.io/luisalejandro/agoras-actions:${VERSION}" >/dev/null 2>&1; then
+            echo "::error::GHCR tag :${VERSION} already exists. Published images are immutable; bump the version or use a manual push for emergencies."
+            exit 1
+          fi
+
       - name: Building docker image
         uses: docker/build-push-action@v7
         with:
-          tags: ghcr.io/luisalejandro/agoras-actions:2.0.1
+          tags: ghcr.io/luisalejandro/agoras-actions:${{ env.VERSION }}
           file: docker/Dockerfile
           context: docker
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
+          push: ${{ startsWith(github.ref, 'refs/heads/release/') }}
           load: false
 
   release-gate:

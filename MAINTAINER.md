@@ -22,7 +22,8 @@ When `develop` is ready to ship:
    `make test`; on Python repos `make test` runs
    coverage),
    (2) `release/<version>` branch pushed,
-   (3) **Push** workflow (`push.yml`) on the release branch — see **GitHub branch
+   (3) **Push** workflow (`push.yml`) on the release branch — builds and publishes
+   the GHCR image once (refuses to overwrite an existing tag); see **GitHub branch
    protection** for the one-time `push.yml` patch,
    (4) tag and GitHub release (`scripts/release.sh` / git-flow finish),
    (5) **Publish Release** workflow (`release.yml`) after publish (lint/tests on the release tag) —

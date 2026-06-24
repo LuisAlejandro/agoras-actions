@@ -79,7 +79,7 @@ make functional-test
 
 That target runs `test.sh` inside the Docker container. Only run it with test credentials you are comfortable using in a development environment.
 
-CI runs repository checks on pull requests to `develop` (see `.github/workflows/pr.yml`). Pushes to `develop`, `master`, and `release/**` run the separate push workflow for image publishing.
+CI runs repository checks on pull requests to `develop` (see `.github/workflows/pr.yml`). Pushes to `develop` and `master` run the push workflow for verification only (Docker build, no registry push). GHCR images are published only from `release/**` branches during the maintainer release process, and an existing tag is never overwritten automatically.
 
 ## Pull Request Guidelines
 
