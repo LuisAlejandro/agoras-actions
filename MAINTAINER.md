@@ -1,6 +1,6 @@
 # Maintainer Guide
 
-Quick reminders for Agoras Actions.
+Quick reminders for Agoras.
 
 ## Feature work
 
