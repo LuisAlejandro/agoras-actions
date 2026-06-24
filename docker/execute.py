@@ -109,7 +109,7 @@ def build_argv(network, action, params):
 
 
 def execute(network, action, params):
-    from agoras.cli import main
+    from agoras.cli.main import main
 
     argv = build_argv(network, action, params)
     main(argv)
