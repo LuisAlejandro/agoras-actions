@@ -8,19 +8,19 @@ APP_NAME ?= agoras-actions
 img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
 exec_on_docker = docker compose \
 	-p agoras-actions -f docker-compose.yml exec -T \
-	--user agoras app
+	--user agoras-actions app
 
 lint: start
 	@$(exec_on_docker) tox -e lint
 
 format: start
-	@$(exec_on_docker) autopep8 --in-place --recursive --aggressive --aggressive docker
+	@$(exec_on_docker) tox -e format
 
 test: start
 	@$(exec_on_docker) tox -e coverage
 
 # >>> rosey-maintainer:ops-docker BEGIN
-# Managed by rosey-maintainer-tools 0.4.3. Do not edit directly.
+# Managed by rosey-maintainer-tools 0.4.4. Do not edit directly.
 
 PROJECT_NAME ?= agoras-actions
 all_ps_hashes = $(shell docker ps -q)
@@ -91,7 +91,7 @@ docker-image:
 .PHONY: lint format test console functional-test virtualenv docker-image
 
 # >>> rosey-maintainer:ops-release BEGIN
-# Managed by rosey-maintainer-tools 0.4.3. Do not edit directly.
+# Managed by rosey-maintainer-tools 0.4.4. Do not edit directly.
 
 release:
 	@./scripts/release.sh $${VERSION_TYPE}
