@@ -56,7 +56,7 @@ The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `
 To build the GitHub Action runtime image locally:
 
 ```bash
-make docker-image
+make build
 ```
 
 ## Quality Checks

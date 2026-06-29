@@ -19,9 +19,6 @@ format: start
 test: start
 	@$(exec_on_docker) tox -e coverage
 
-# >>> rosey-maintainer:ops-docker BEGIN
-# Managed by rosey-maintainer-tools 0.4.4. Do not edit directly.
-
 PROJECT_NAME ?= agoras-actions
 all_ps_hashes = $(shell docker ps -q)
 
@@ -65,7 +62,6 @@ cataplum:
 	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
 		--rmi all --remove-orphans --volumes
 	@docker system prune -a -f --volumes
-# <<< rosey-maintainer:ops-docker END
 
 console: start
 	@$(exec_on_docker) bash
@@ -80,7 +76,10 @@ virtualenv: start
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
 	@./virtualenv/bin/python3 -m pip install "agoras==2.0.5"
 
-docker-image:
+dependencies:
+	@:
+
+build:
 	@docker build -f docker/Dockerfile \
 		--build-arg VERSION=$$(grep '^current_version' .bumpversion.cfg | awk '{print $$3}') \
 		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
@@ -88,10 +87,7 @@ docker-image:
 		-t luisalejandro/agoras-actions:latest \
 		docker/
 
-.PHONY: lint format test console functional-test virtualenv docker-image
-
-# >>> rosey-maintainer:ops-release BEGIN
-# Managed by rosey-maintainer-tools 0.4.4. Do not edit directly.
+.PHONY: lint format test console functional-test virtualenv build dependencies
 
 release:
 	@./scripts/release.sh $${VERSION_TYPE}
@@ -106,7 +102,10 @@ release-major:
 	@./scripts/release.sh major $${APP_NAME}
 
 
-release-preflight: start
+release-preflight:
+	@make image
+	@make dependencies
+	@make build
 	@make format
 	@make lint
 	@make test
@@ -114,4 +113,3 @@ release-preflight: start
 undo-release:
 	@: "$${VERSION:?Set VERSION=x.y.z before running make undo-release}"
 	@VERSION=$${VERSION} ./scripts/rollback.sh release
-# <<< rosey-maintainer:ops-release END

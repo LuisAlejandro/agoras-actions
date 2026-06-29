@@ -28,22 +28,31 @@ jobs:
           python3 -m pip install -r requirements-dev.txt
           tox -e coverage
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+      - name: Set environment variables
+        run: |
+          echo "UID=$(id -u)" >> $GITHUB_ENV
+          echo "GID=$(id -g)" >> $GITHUB_ENV
+          echo "PROJECT_NAME=agoras-actions" >> $GITHUB_ENV
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v7
-        with:
-          tags: agoras-actions:pr-test
-          file: docker/Dockerfile
-          context: docker
-          load: true
-          push: false
+      - name: Prepare CI environment file
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Build release pipeline
+        run: |
+          make image
+          make dependencies
+          make build
 
       - name: Smoke test container
-        run: docker run --rm agoras-actions:pr-test test
+        run: docker run --rm luisalejandro/agoras-actions:latest test
 
-  # >>> rosey-maintainer:ci-quality BEGIN
+      - name: Tear down Docker
+        if: always()
+        run: make down
+
   code-quality:
     name: Code Quality
     runs-on: ubuntu-24.04
@@ -64,4 +73,3 @@ jobs:
             --baseline-commit "${BASELINE}" \
             --metrics=off \
             --error
-  # <<< rosey-maintainer:ci-quality END
