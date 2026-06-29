@@ -1,12 +1,12 @@
 name: agoras-actions
 author: Luis Alejandro Martínez Faneyth
-description: Agoras helps publish, schedule, like, share and delete posts on social networks (Agoras 2.0 native CLI).
+description: Agoras helps publish, like, share and delete posts on social networks (Agoras 2.0 native CLI).
 inputs:
   network:
     description: 'Target platform. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x.'
     required: true
   action:
-    description: 'Action to execute. One of: post, like, share, delete, video, authorize, template, last-from-feed, random-from-feed, schedule.'
+    description: 'Action to execute. One of: post, like, share, delete, video, template.'
     required: true
   text:
     description: Text content to publish.
@@ -61,30 +61,6 @@ inputs:
     required: false
   keywords:
     description: Comma-separated YouTube keywords.
-    required: false
-  feed-url:
-    description: RSS/Atom feed URL for feed-publish actions.
-    required: false
-  max-count:
-    description: Max posts to publish from feed at once.
-    required: false
-  post-lookback:
-    description: Only posts within last N seconds (feed-publish).
-    required: false
-  max-post-age:
-    description: Max post age in days (feed-publish).
-    required: false
-  sheets-id:
-    description: Google Sheets document ID (schedule-run).
-    required: false
-  sheets-name:
-    description: Sheet tab name (schedule-run).
-    required: false
-  sheets-client-email:
-    description: Google service account email (schedule-run).
-    required: false
-  sheets-private-key:
-    description: Google service account private key (schedule-run).
     required: false
   x-consumer-key:
     description: X API consumer key.
@@ -238,14 +214,6 @@ runs:
     - category-id="${{ inputs.category-id }}"
     - privacy="${{ inputs.privacy }}"
     - keywords="${{ inputs.keywords }}"
-    - feed-url="${{ inputs.feed-url }}"
-    - max-count="${{ inputs.max-count }}"
-    - post-lookback="${{ inputs.post-lookback }}"
-    - max-post-age="${{ inputs.max-post-age }}"
-    - sheets-id="${{ inputs.sheets-id }}"
-    - sheets-name="${{ inputs.sheets-name }}"
-    - sheets-client-email="${{ inputs.sheets-client-email }}"
-    - sheets-private-key="${{ inputs.sheets-private-key }}"
     - x-consumer-key="${{ inputs.x-consumer-key }}"
     - x-consumer-secret="${{ inputs.x-consumer-secret }}"
     - x-oauth-token="${{ inputs.x-oauth-token }}"

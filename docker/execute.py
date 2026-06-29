@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 
 RESERVED_KEYS = frozenset({'network', 'action'})
 
 LOOPABLE_ACTIONS = frozenset({'like', 'share', 'delete'})
-PLATFORM_ACTIONS = frozenset({'post', 'like', 'share', 'delete', 'video', 'authorize', 'template'})
-FEED_ACTIONS = frozenset({'last-from-feed', 'random-from-feed'})
-SCHEDULE_ACTIONS = frozenset({'schedule'})
-UTILS_ACTIONS = FEED_ACTIONS | SCHEDULE_ACTIONS
-ALL_ACTIONS = PLATFORM_ACTIONS | UTILS_ACTIONS
+PLATFORM_ACTIONS = frozenset({'post', 'like', 'share', 'delete', 'video', 'template'})
+ALL_ACTIONS = PLATFORM_ACTIONS
 
 PLATFORM_PREFIXES = {
     'x': 'x-',
@@ -25,13 +23,6 @@ PLATFORM_PREFIXES = {
     'whatsapp': 'whatsapp-',
 }
 
-SHEETS_LEGACY_MAP = {
-    'google-sheets-id': 'sheets-id',
-    'google-sheets-name': 'sheets-name',
-    'google-sheets-client-email': 'sheets-client-email',
-    'google-sheets-private-key': 'sheets-private-key',
-}
-
 # Params that are passed through without platform-prefix stripping.
 COMMON_PARAMS = frozenset({
     'text', 'link', 'image-1', 'image-2', 'image-3', 'image-4',
@@ -39,21 +30,81 @@ COMMON_PARAMS = frozenset({
     'video-type', 'video-caption', 'video-id', 'title', 'description',
     'category-id', 'privacy', 'keywords', 'recipient', 'template-name',
     'language-code', 'template-components', 'parse-mode',
-    'feed-url', 'max-count', 'post-lookback', 'max-post-age',
-    'sheets-id', 'sheets-name', 'sheets-client-email', 'sheets-private-key',
     'allow-comments', 'allow-duet', 'allow-stitch', 'auto-add-music',
     'brand-organic', 'brand-content',
 })
+
+# Agoras 2.x reads platform credentials from env on unattended actions.
+AUTH_PARAM_ENV_VARS = {
+    'x': {
+        'consumer-key': 'TWITTER_CONSUMER_KEY',
+        'consumer-secret': 'TWITTER_CONSUMER_SECRET',
+        'oauth-token': 'TWITTER_OAUTH_TOKEN',
+        'oauth-secret': 'TWITTER_OAUTH_SECRET',
+    },
+    'facebook': {
+        'client-id': 'FACEBOOK_CLIENT_ID',
+        'client-secret': 'FACEBOOK_CLIENT_SECRET',
+        'refresh-token': 'FACEBOOK_REFRESH_TOKEN',
+        'object-id': 'FACEBOOK_OBJECT_ID',
+        'app-id': 'FACEBOOK_APP_ID',
+        'access-token': 'FACEBOOK_ACCESS_TOKEN',
+    },
+    'instagram': {
+        'client-id': 'INSTAGRAM_CLIENT_ID',
+        'client-secret': 'INSTAGRAM_CLIENT_SECRET',
+        'refresh-token': 'INSTAGRAM_REFRESH_TOKEN',
+        'object-id': 'INSTAGRAM_OBJECT_ID',
+        'access-token': 'INSTAGRAM_ACCESS_TOKEN',
+    },
+    'linkedin': {
+        'client-id': 'LINKEDIN_CLIENT_ID',
+        'client-secret': 'LINKEDIN_CLIENT_SECRET',
+        'refresh-token': 'LINKEDIN_REFRESH_TOKEN',
+        'object-id': 'LINKEDIN_OBJECT_ID',
+        'access-token': 'LINKEDIN_ACCESS_TOKEN',
+    },
+    'discord': {
+        'bot-token': 'DISCORD_BOT_TOKEN',
+        'server-name': 'DISCORD_SERVER_NAME',
+        'channel-name': 'DISCORD_CHANNEL_NAME',
+    },
+    'youtube': {
+        'client-id': 'YOUTUBE_CLIENT_ID',
+        'client-secret': 'YOUTUBE_CLIENT_SECRET',
+        'refresh-token': 'YOUTUBE_REFRESH_TOKEN',
+        'access-token': 'YOUTUBE_ACCESS_TOKEN',
+    },
+    'tiktok': {
+        'client-key': 'TIKTOK_CLIENT_KEY',
+        'client-secret': 'TIKTOK_CLIENT_SECRET',
+        'refresh-token': 'TIKTOK_REFRESH_TOKEN',
+        'username': 'TIKTOK_USERNAME',
+        'access-token': 'TIKTOK_ACCESS_TOKEN',
+    },
+    'threads': {
+        'app-id': 'THREADS_APP_ID',
+        'app-secret': 'THREADS_APP_SECRET',
+        'refresh-token': 'THREADS_REFRESH_TOKEN',
+        'user-id': 'THREADS_USER_ID',
+        'access-token': 'THREADS_ACCESS_TOKEN',
+    },
+    'telegram': {
+        'bot-token': 'TELEGRAM_BOT_TOKEN',
+        'chat-id': 'TELEGRAM_CHAT_ID',
+    },
+    'whatsapp': {
+        'access-token': 'WHATSAPP_ACCESS_TOKEN',
+        'phone-number-id': 'WHATSAPP_PHONE_NUMBER_ID',
+        'business-account-id': 'WHATSAPP_BUSINESS_ACCOUNT_ID',
+    },
+}
 
 
 def normalize_network(network):
     if network == 'twitter':
         return 'x'
     return network
-
-
-def is_utils_action(action):
-    return action in UTILS_ACTIONS
 
 
 def strip_platform_prefix(key, network):
@@ -68,12 +119,7 @@ def translate_params(params, network, action):
     for key, value in params.items():
         if key in RESERVED_KEYS or not value:
             continue
-        if key in SHEETS_LEGACY_MAP:
-            key = SHEETS_LEGACY_MAP[key]
         normalized[key] = value
-
-    if is_utils_action(action):
-        return normalized
 
     translated = {}
     prefix = PLATFORM_PREFIXES.get(network, f'{network}-')
@@ -89,30 +135,57 @@ def translate_params(params, network, action):
     return translated
 
 
+def split_cli_and_env_params(network, cli_params):
+    env_map = AUTH_PARAM_ENV_VARS.get(network, {})
+    cli_only = {}
+    env_vars = {}
+    for key, value in cli_params.items():
+        env_key = env_map.get(key)
+        if env_key:
+            env_vars[env_key] = value
+        else:
+            cli_only[key] = value
+    return cli_only, env_vars
+
+
 def build_argv(network, action, params):
     network = normalize_network(network)
-    cli_params = translate_params(params, network, action)
+    cli_params, _env_vars = prepare_cli_and_env(network, action, params)
 
-    if action in FEED_ACTIONS:
-        mode = 'last' if action == 'last-from-feed' else 'random'
-        argv = ['utils', 'feed-publish', '--network', network, '--mode', mode]
-    elif action in SCHEDULE_ACTIONS:
-        argv = ['utils', 'schedule-run']
-        if network:
-            argv.extend(['--network', network])
-    else:
-        argv = [network, action]
-
+    argv = [network, action]
     for key, value in cli_params.items():
         argv.extend([f'--{key}', value])
     return argv
 
 
+def prepare_cli_and_env(network, action, params):
+    network = normalize_network(network)
+    cli_params = translate_params(params, network, action)
+    return split_cli_and_env_params(network, cli_params)
+
+
+def build_env(network, action, params):
+    _cli_params, env_vars = prepare_cli_and_env(network, action, params)
+    return env_vars
+
+
 def execute(network, action, params):
     from agoras.cli.main import main
 
+    network = normalize_network(network)
     argv = build_argv(network, action, params)
-    main(argv)
+    env_vars = build_env(network, action, params)
+
+    previous = {key: os.environ.get(key) for key in env_vars}
+    try:
+        os.environ.update(env_vars)
+        main(argv)
+    finally:
+        for key in env_vars:
+            if previous[key] is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = previous[key]
 
 
 def parse_payload(payload):

@@ -124,7 +124,7 @@ The `result` output contains comma-separated post IDs from publish, like, share,
 ### Control
 
 * `network` — Platform: `x`, `facebook`, `instagram`, `linkedin`, `discord`, `youtube`, `tiktok`, `threads`, `telegram`, `whatsapp` (`twitter` maps to `x`)
-* `action` — `post`, `like`, `share`, `delete`, `video`, `authorize`, `template`, `last-from-feed`, `random-from-feed`, `schedule`
+* `action` — `post`, `like`, `share`, `delete`, `video`, `template`
 
 ### Content
 
@@ -132,14 +132,11 @@ The `result` output contains comma-separated post IDs from publish, like, share,
 * `video-url`, `video-title`, `video-description`, `video-type`, `video-caption`
 * `title`, `description`, `category-id`, `privacy`, `keywords`
 
-### Feed and schedule
-
-* `feed-url`, `max-count`, `post-lookback`, `max-post-age`
-* `sheets-id`, `sheets-name`, `sheets-client-email`, `sheets-private-key`
-
 ### Platform credentials
 
-Prefixed inputs per platform (e.g. `x-consumer-key`, `facebook-client-id`, `facebook-refresh-token`). See [action.yml](action.yml) and [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) for the full list.
+Prefixed inputs per platform (e.g. `x-consumer-key`, `facebook-client-id`, `facebook-refresh-token`). The action maps these to Agoras environment variables internally (e.g. `FACEBOOK_CLIENT_ID`, `TWITTER_CONSUMER_KEY`). See [action.yml](action.yml) and [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html) for the full list.
+
+`authorize`, `last-from-feed`, `random-from-feed`, and `schedule` are **not** supported by this action. Run `agoras <network> authorize` or `agoras utils …` locally when you need those flows.
 
 ## Examples
 
@@ -162,29 +159,6 @@ jobs:
           linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
           linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
           linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
-```
-
-### Feed publish (cron)
-
-```yml
-on:
-  schedule:
-    - cron: '0 * * * *'
-jobs:
-  feed:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: LuisAlejandro/agoras-actions@2.0.5
-        with:
-          network: x
-          action: last-from-feed
-          feed-url: https://example.com/feed.xml
-          max-count: 1
-          post-lookback: 3600
-          x-consumer-key: ${{ secrets.X_CONSUMER_KEY }}
-          x-consumer-secret: ${{ secrets.X_CONSUMER_SECRET }}
-          x-oauth-token: ${{ secrets.X_OAUTH_TOKEN }}
-          x-oauth-secret: ${{ secrets.X_OAUTH_SECRET }}
 ```
 
 ## Made with 💖 and 🍔

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import unittest
 from unittest.mock import patch
 
 from execute import (
     build_argv,
+    build_env,
     execute,
     normalize_network,
     parse_payload,
@@ -24,41 +26,29 @@ class TestNormalizeNetwork(unittest.TestCase):
 
 
 class TestBuildArgv(unittest.TestCase):
-    def test_x_post_platform_command(self):
+    def test_x_post_omits_auth_flags_from_argv(self):
         argv = build_argv('x', 'post', {
             'network': 'x',
             'action': 'post',
             'x-consumer-key': 'key',
             'text': 'hello',
         })
-        self.assertEqual(argv[:3], ['x', 'post', '--consumer-key'])
-        self.assertIn('--text', argv)
-        self.assertIn('hello', argv)
-        self.assertNotIn('--x-consumer-key', argv)
+        self.assertEqual(argv, ['x', 'post', '--text', 'hello'])
+        self.assertNotIn('--consumer-key', argv)
 
-    def test_feed_publish_utils_command(self):
-        argv = build_argv('facebook', 'last-from-feed', {
-            'network': 'facebook',
-            'action': 'last-from-feed',
-            'feed-url': 'https://example.com/feed.xml',
-            'facebook-object-id': '123',
+    def test_x_post_maps_auth_to_env(self):
+        env = build_env('x', 'post', {
+            'x-consumer-key': 'key',
+            'x-consumer-secret': 'sec',
+            'x-oauth-token': 'tok',
+            'x-oauth-secret': 'osec',
         })
-        self.assertEqual(argv[:6], ['utils', 'feed-publish', '--network', 'facebook', '--mode', 'last'])
-        self.assertIn('--feed-url', argv)
-        self.assertIn('--facebook-object-id', argv)
-        self.assertIn('123', argv)
-
-    def test_schedule_run(self):
-        argv = build_argv('', 'schedule', {
-            'action': 'schedule',
-            'sheets-id': 'sheet123',
-            'sheets-name': 'Schedule',
-            'sheets-client-email': 'svc@example.com',
-            'sheets-private-key': 'key',
+        self.assertEqual(env, {
+            'TWITTER_CONSUMER_KEY': 'key',
+            'TWITTER_CONSUMER_SECRET': 'sec',
+            'TWITTER_OAUTH_TOKEN': 'tok',
+            'TWITTER_OAUTH_SECRET': 'osec',
         })
-        self.assertEqual(argv[0], 'utils')
-        self.assertEqual(argv[1], 'schedule-run')
-        self.assertIn('--sheets-id', argv)
 
     def test_youtube_like_maps_post_id_to_video_id(self):
         params = translate_params(
@@ -67,6 +57,78 @@ class TestBuildArgv(unittest.TestCase):
             'like',
         )
         self.assertEqual(params, {'video-id': 'abc123'})
+
+    def test_facebook_post_omits_auth_flags_from_argv(self):
+        argv = build_argv('facebook', 'post', {
+            'network': 'facebook',
+            'action': 'post',
+            'text': 'hello',
+            'image-1': 'http://img',
+            'facebook-client-id': 'cid',
+            'facebook-client-secret': 'sec',
+            'facebook-object-id': 'oid',
+            'facebook-refresh-token': 'tok',
+        })
+        self.assertEqual(argv[:2], ['facebook', 'post'])
+        self.assertIn('--text', argv)
+        self.assertIn('--image-1', argv)
+        self.assertNotIn('--client-id', argv)
+        self.assertNotIn('--client-secret', argv)
+        self.assertNotIn('--object-id', argv)
+        self.assertNotIn('--refresh-token', argv)
+
+    def test_facebook_post_maps_auth_to_env(self):
+        env = build_env('facebook', 'post', {
+            'facebook-client-id': 'cid',
+            'facebook-client-secret': 'sec',
+            'facebook-object-id': 'oid',
+            'facebook-refresh-token': 'tok',
+        })
+        self.assertEqual(env, {
+            'FACEBOOK_CLIENT_ID': 'cid',
+            'FACEBOOK_CLIENT_SECRET': 'sec',
+            'FACEBOOK_OBJECT_ID': 'oid',
+            'FACEBOOK_REFRESH_TOKEN': 'tok',
+        })
+
+    def test_linkedin_post_omits_auth_flags_from_argv(self):
+        argv = build_argv('linkedin', 'post', {
+            'text': 'hello',
+            'linkedin-client-id': 'cid',
+            'linkedin-client-secret': 'sec',
+            'linkedin-object-id': 'oid',
+            'linkedin-refresh-token': 'tok',
+        })
+        self.assertEqual(argv, ['linkedin', 'post', '--text', 'hello'])
+        self.assertEqual(build_env('linkedin', 'post', {
+            'linkedin-client-id': 'cid',
+            'linkedin-client-secret': 'sec',
+            'linkedin-object-id': 'oid',
+            'linkedin-refresh-token': 'tok',
+        }), {
+            'LINKEDIN_CLIENT_ID': 'cid',
+            'LINKEDIN_CLIENT_SECRET': 'sec',
+            'LINKEDIN_OBJECT_ID': 'oid',
+            'LINKEDIN_REFRESH_TOKEN': 'tok',
+        })
+
+    def test_discord_post_maps_auth_to_env(self):
+        argv = build_argv('discord', 'post', {
+            'text': 'hello',
+            'discord-bot-token': 'token',
+            'discord-server-name': 'srv',
+            'discord-channel-name': 'chan',
+        })
+        self.assertEqual(argv, ['discord', 'post', '--text', 'hello'])
+        self.assertEqual(build_env('discord', 'post', {
+            'discord-bot-token': 'token',
+            'discord-server-name': 'srv',
+            'discord-channel-name': 'chan',
+        }), {
+            'DISCORD_BOT_TOKEN': 'token',
+            'DISCORD_SERVER_NAME': 'srv',
+            'DISCORD_CHANNEL_NAME': 'chan',
+        })
 
 
 class TestParsePayload(unittest.TestCase):
@@ -84,6 +146,13 @@ class TestParsePayload(unittest.TestCase):
 class TestExecute(unittest.TestCase):
     @patch('agoras.cli.main.main')
     def test_execute_delegates_to_agoras_main(self, mock_main):
+        seen = {}
+
+        def capture_env(argv):
+            seen['argv'] = argv
+            seen['env'] = os.environ.get('TWITTER_CONSUMER_KEY')
+
+        mock_main.side_effect = capture_env
         execute('x', 'post', {
             'network': 'x',
             'action': 'post',
@@ -91,18 +160,46 @@ class TestExecute(unittest.TestCase):
             'text': 'hello',
         })
         mock_main.assert_called_once()
-        argv = mock_main.call_args[0][0]
-        self.assertEqual(argv[:2], ['x', 'post'])
-        self.assertIn('--consumer-key', argv)
-        self.assertIn('key', argv)
-        self.assertIn('--text', argv)
-        self.assertIn('hello', argv)
-        self.assertNotIn('--x-consumer-key', argv)
+        self.assertEqual(seen['argv'], ['x', 'post', '--text', 'hello'])
+        self.assertEqual(seen['env'], 'key')
+        self.assertIsNone(os.environ.get('TWITTER_CONSUMER_KEY'))
+
+    @patch('agoras.cli.main.main')
+    def test_execute_sets_facebook_auth_env(self, mock_main):
+        seen = {}
+
+        def capture_env(argv):
+            seen['argv'] = argv
+            seen['env'] = {
+                'FACEBOOK_CLIENT_ID': os.environ.get('FACEBOOK_CLIENT_ID'),
+                'FACEBOOK_OBJECT_ID': os.environ.get('FACEBOOK_OBJECT_ID'),
+            }
+
+        mock_main.side_effect = capture_env
+        execute('facebook', 'post', {
+            'text': 'hello',
+            'facebook-client-id': 'cid',
+            'facebook-client-secret': 'sec',
+            'facebook-object-id': 'oid',
+            'facebook-refresh-token': 'tok',
+        })
+        mock_main.assert_called_once()
+        self.assertEqual(seen['argv'], ['facebook', 'post', '--text', 'hello'])
+        self.assertEqual(seen['env']['FACEBOOK_CLIENT_ID'], 'cid')
+        self.assertEqual(seen['env']['FACEBOOK_OBJECT_ID'], 'oid')
+        self.assertIsNone(os.environ.get('FACEBOOK_CLIENT_ID'))
 
 
 class TestRunFromPayload(unittest.TestCase):
     @patch('agoras.cli.main.main')
     def test_run_from_payload_github_style_quoted_args(self, mock_main):
+        seen = {}
+
+        def capture_env(argv):
+            seen['argv'] = argv
+            seen['env'] = os.environ.get('TWITTER_CONSUMER_KEY')
+
+        mock_main.side_effect = capture_env
         run_from_payload([
             'network=x',
             'action=post',
@@ -110,18 +207,26 @@ class TestRunFromPayload(unittest.TestCase):
             'x-consumer-key="key"',
         ])
         mock_main.assert_called_once()
-        argv = mock_main.call_args[0][0]
-        self.assertEqual(argv[:2], ['x', 'post'])
-        self.assertIn('--text', argv)
-        self.assertIn('hello', argv)
-        self.assertIn('--consumer-key', argv)
-        self.assertIn('key', argv)
+        self.assertEqual(seen['argv'], ['x', 'post', '--text', 'hello'])
+        self.assertEqual(seen['env'], 'key')
 
 
 class TestValidateAction(unittest.TestCase):
     def test_invalid_action_raises(self):
         with self.assertRaisesRegex(ValueError, 'not-real'):
             validate_action('not-real')
+
+    def test_rejects_authorize_action(self):
+        with self.assertRaisesRegex(ValueError, 'authorize'):
+            validate_action('authorize')
+
+    def test_rejects_feed_action(self):
+        with self.assertRaisesRegex(ValueError, 'last-from-feed'):
+            validate_action('last-from-feed')
+
+    def test_rejects_schedule_action(self):
+        with self.assertRaisesRegex(ValueError, 'schedule'):
+            validate_action('schedule')
 
 
 class TestLoopableActions(unittest.TestCase):
