@@ -69,7 +69,7 @@ make format
 make test
 ```
 
-These targets run inside the development container via tox (`lint`, autopep8 formatting, and `coverage`).
+These targets run inside the development container via tox (`lint`, `format`, and `coverage`).
 
 For integration testing against live credentials, use:
 

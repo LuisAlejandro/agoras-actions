@@ -87,7 +87,9 @@ build:
 		-t luisalejandro/agoras-actions:latest \
 		docker/
 
-.PHONY: lint format test console functional-test virtualenv build dependencies
+.PHONY: lint format test console functional-test virtualenv build dependencies \
+	image start stop down destroy cataplum release release-patch release-minor \
+	release-major release-preflight undo-release
 
 release:
 	@./scripts/release.sh $${VERSION_TYPE}
