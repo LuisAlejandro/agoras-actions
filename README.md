@@ -123,8 +123,9 @@ The `result` output contains comma-separated post IDs from publish, like, share,
 
 ### Control
 
-* `network` — Platform: `x`, `facebook`, `instagram`, `linkedin`, `discord`, `youtube`, `tiktok`, `threads`, `telegram`, `whatsapp` (`twitter` maps to `x`)
-* `action` — `post`, `like`, `share`, `delete`, `video`, `template`
+* `network` — Platform for social actions: `x`, `facebook`, … (`twitter` maps to `x`). Optional when `action` is `refresh-credentials`.
+* `action` — `post`, `like`, `share`, `delete`, `video`, `template`, `refresh-credentials`
+* `github-secret-update-token`, `platforms`, `*-refresh-token-secret-name` — see [Credential refresh](#credential-refresh-github-secrets)
 
 ### Content
 
@@ -160,6 +161,54 @@ jobs:
           linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
           linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
 ```
+
+## Credential refresh (GitHub secrets)
+
+OAuth providers may rotate long-lived refresh tokens. Use the standalone `refresh-credentials` action on a schedule (or `workflow_dispatch`) to refresh tokens and write rotated values back to **your** repository secrets.
+
+**Requirements**
+
+- A PAT or GitHub App installation token with **repository secrets write** permission (`AGORAS_SECRET_UPDATE_TOKEN` or any secret you map to `github-secret-update-token`).
+- Per-platform `*-refresh-token-secret-name` inputs that name the GitHub secret to update (arbitrary names — they do not have to match action input names).
+- Full unattended credentials for each platform (same inputs as posting, e.g. `facebook-client-id`, `facebook-refresh-token`, …).
+
+**Limitations**
+
+- Updated secrets apply to **future** workflow runs only; the same job cannot read newly written secrets.
+- Repository secrets only (not org/environment secrets in v1).
+- Supports YouTube, Facebook, Instagram, LinkedIn, TikTok, and Threads. X, Discord, Telegram, and WhatsApp are out of scope.
+
+**Example (scheduled refresh)**
+
+```yml
+name: Refresh social OAuth tokens
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-oauth-tokens
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@2.0.5
+        with:
+          action: refresh-credentials
+          github-secret-update-token: ${{ secrets.AGORAS_SECRET_UPDATE_TOKEN }}
+          facebook-client-id: ${{ secrets.FB_CLIENT_ID }}
+          facebook-client-secret: ${{ secrets.FB_CLIENT_SECRET }}
+          facebook-refresh-token: ${{ secrets.FB_REFRESH_TOKEN }}
+          facebook-object-id: ${{ secrets.FB_PAGE_ID }}
+          facebook-refresh-token-secret-name: FB_REFRESH_TOKEN
+```
+
+Use `platforms: facebook,linkedin` to limit which platforms run. Optional `network` adds another filter when set.
+
+**Security:** Restrict this workflow to `schedule` / `workflow_dispatch` on your default branch. Do not run secret-write steps on fork PRs. If OAuth refresh succeeds but GitHub write fails, update the secret manually before the next post.
 
 ## Made with 💖 and 🍔
 

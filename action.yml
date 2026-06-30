@@ -1,13 +1,37 @@
 name: agoras-actions
 author: Luis Alejandro Martínez Faneyth
-description: Agoras helps publish, like, share and delete posts on social networks (Agoras 2.0 native CLI).
+description: Agoras helps publish, like, share and delete posts on social networks (Agoras 2.0 native CLI). Also supports standalone OAuth credential refresh to GitHub secrets.
 inputs:
   network:
-    description: 'Target platform. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x.'
-    required: true
+    description: 'Target platform for social actions. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x. Optional when action is refresh-credentials (may be used as an additional platform filter).'
+    required: false
   action:
-    description: 'Action to execute. One of: post, like, share, delete, video, template.'
+    description: 'Action to execute. One of: post, like, share, delete, video, template, refresh-credentials.'
     required: true
+  github-secret-update-token:
+    description: PAT or GitHub App token with repository secrets write permission. Required when any *-refresh-token-secret-name input is set.
+    required: false
+  platforms:
+    description: 'Comma-separated platforms to refresh (youtube, facebook, instagram, linkedin, tiktok, threads). Defaults to all configured platforms when omitted.'
+    required: false
+  youtube-refresh-token-secret-name:
+    description: GitHub repository secret name to update with the refreshed YouTube refresh token.
+    required: false
+  facebook-refresh-token-secret-name:
+    description: GitHub repository secret name to update with the refreshed Facebook refresh token.
+    required: false
+  instagram-refresh-token-secret-name:
+    description: GitHub repository secret name to update with the refreshed Instagram refresh token.
+    required: false
+  linkedin-refresh-token-secret-name:
+    description: GitHub repository secret name to update with the refreshed LinkedIn refresh token.
+    required: false
+  tiktok-refresh-token-secret-name:
+    description: GitHub repository secret name to update with the refreshed TikTok refresh token.
+    required: false
+  threads-refresh-token-secret-name:
+    description: GitHub repository secret name to update with the refreshed Threads refresh token.
+    required: false
   text:
     description: Text content to publish.
     required: false
@@ -196,6 +220,14 @@ runs:
   args:
     - network="${{ inputs.network }}"
     - action="${{ inputs.action }}"
+    - github-secret-update-token="${{ inputs.github-secret-update-token }}"
+    - platforms="${{ inputs.platforms }}"
+    - youtube-refresh-token-secret-name="${{ inputs.youtube-refresh-token-secret-name }}"
+    - facebook-refresh-token-secret-name="${{ inputs.facebook-refresh-token-secret-name }}"
+    - instagram-refresh-token-secret-name="${{ inputs.instagram-refresh-token-secret-name }}"
+    - linkedin-refresh-token-secret-name="${{ inputs.linkedin-refresh-token-secret-name }}"
+    - tiktok-refresh-token-secret-name="${{ inputs.tiktok-refresh-token-secret-name }}"
+    - threads-refresh-token-secret-name="${{ inputs.threads-refresh-token-secret-name }}"
     - text="${{ inputs.text }}"
     - link="${{ inputs.link }}"
     - image-1="${{ inputs.image-1 }}"

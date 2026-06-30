@@ -8,6 +8,20 @@ if [ "${1}" == "test" ]; then
     exit 0
 fi
 
+REFRESH_MODE=false
+for arg in "$@"; do
+    case "${arg}" in
+        action=refresh-credentials|action=\"refresh-credentials\")
+            REFRESH_MODE=true
+            ;;
+    esac
+done
+
+if [ "${REFRESH_MODE}" = true ]; then
+    python3 /execute.py "$@"
+    exit $?
+fi
+
 python3 /execute.py "$@" | tee /output.log
 
 RESULT="$(cat /output.log | jq -r '.id' | xargs printf '%s,')"
