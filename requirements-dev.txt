@@ -1,4 +1,4 @@
-tox==4.55.1
+tox==4.56.1
 ruff==0.15.20
 pydocstyle==6.3.0
 bandit==1.9.4
