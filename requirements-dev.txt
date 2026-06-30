@@ -1,5 +1,5 @@
 tox==4.55.1
-ruff==0.4.7
+ruff==0.15.20
 pydocstyle==6.3.0
 bandit==1.7.9
 pyright==1.1.365
