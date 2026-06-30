@@ -8,5 +8,5 @@ services:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
     volumes:
-      - .:/home/agoras/app
-      - ~/Library/Caches/pip:/home/agoras/.cache/pip
+      - .:/home/agoras-actions/app
+      - ~/Library/Caches/pip:/home/agoras-actions/.cache/pip

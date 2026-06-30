@@ -19,14 +19,14 @@ RUN EXISTUSER=$(getent passwd | awk -F':' '$3 == '$UID' {print $1}') && \
 RUN EXISTGROUP=$(getent group | awk -F':' '$3 == '$GID' {print $1}') && \
     [ -n "${EXISTGROUP}" ] && delgroup ${EXISTGROUP} || true
 
-RUN groupadd -g "${GID}" agoras || true
-RUN useradd -u "${UID}" -g "${GID}" -ms /bin/bash agoras
-RUN echo "agoras ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/agoras
+RUN groupadd -g "${GID}" agoras-actions || true
+RUN useradd -u "${UID}" -g "${GID}" -ms /bin/bash agoras-actions
+RUN echo "agoras-actions ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/agoras-actions
 
-USER agoras
+USER agoras-actions
 
-RUN mkdir -p /home/agoras/app /home/agoras/.cache/pip
+RUN mkdir -p /home/agoras-actions/app /home/agoras-actions/.cache/pip
 
-WORKDIR /home/agoras/app
+WORKDIR /home/agoras-actions/app
 
 CMD ["tail", "-f", "/dev/null"]

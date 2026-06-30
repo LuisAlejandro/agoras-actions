@@ -88,7 +88,7 @@ Copy `.env.example` to `secrets.env` and fill in credentials for `make functiona
 Build the GitHub Action runtime image (from `docker/Dockerfile`):
 
 ```bash
-make docker-image
+make build
 ```
 
 The root `Dockerfile` powers day-to-day development (`make image`, `make start`, `make lint`, `make test`).

@@ -56,7 +56,7 @@ The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `
 To build the GitHub Action runtime image locally:
 
 ```bash
-make docker-image
+make build
 ```
 
 ## Quality Checks
@@ -69,7 +69,7 @@ make format
 make test
 ```
 
-These targets run inside the development container via tox (`lint`, autopep8 formatting, and `coverage`).
+These targets run inside the development container via tox (`lint`, `format`, and `coverage`).
 
 For integration testing against live credentials, use:
 

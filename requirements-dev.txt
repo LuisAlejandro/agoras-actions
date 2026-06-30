@@ -1,4 +1,6 @@
 tox==4.55.1
-flake8==7.3.0
+ruff==0.4.7
+pydocstyle==6.3.0
+bandit==1.7.9
+pyright==1.1.365
 coverage==7.14.3
-autopep8==2.3.2
