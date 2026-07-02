@@ -57,8 +57,14 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
         run: |
           if [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            AGORAS_DEVELOP_SHA="$(git ls-remote https://github.com/LuisAlejandro/agoras.git refs/heads/develop | awk '{print $1}')"
+            if [ -z "$AGORAS_DEVELOP_SHA" ]; then
+              echo "::error::Unable to resolve LuisAlejandro/agoras develop"
+              exit 1
+            fi
+            echo "Resolved LuisAlejandro/agoras develop to ${AGORAS_DEVELOP_SHA}"
             echo "tags=ghcr.io/luisalejandro/agoras-actions:develop" >> $GITHUB_OUTPUT
-            echo "build_args=AGORAS_INSTALL_SPEC=git+https://github.com/LuisAlejandro/agoras.git@develop" >> $GITHUB_OUTPUT
+            echo "build_args=AGORAS_INSTALL_SPEC=git+https://github.com/LuisAlejandro/agoras.git@${AGORAS_DEVELOP_SHA}" >> $GITHUB_OUTPUT
             echo "push=true" >> $GITHUB_OUTPUT
           elif [[ "$GITHUB_REF" =~ ^refs/heads/release/ ]]; then
             echo "tags=ghcr.io/luisalejandro/agoras-actions:${VERSION}" >> $GITHUB_OUTPUT
