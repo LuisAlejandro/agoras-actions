@@ -53,17 +53,19 @@ jobs:
 
       - name: Determine Docker build parameters
         id: docker_meta
+        env:
+          GITHUB_REF: ${{ github.ref }}
         run: |
-          if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/develop" ]; then
             echo "tags=ghcr.io/luisalejandro/agoras-actions:develop" >> $GITHUB_OUTPUT
             echo "build_args=AGORAS_INSTALL_SPEC=git+https://github.com/LuisAlejandro/agoras.git@develop" >> $GITHUB_OUTPUT
             echo "push=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" =~ ^refs/heads/release/ ]]; then
-            echo "tags=ghcr.io/luisalejandro/agoras-actions:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+          elif [[ "$GITHUB_REF" =~ ^refs/heads/release/ ]]; then
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:${VERSION}" >> $GITHUB_OUTPUT
             echo "build_args=" >> $GITHUB_OUTPUT
             echo "push=true" >> $GITHUB_OUTPUT
           else
-            echo "tags=ghcr.io/luisalejandro/agoras-actions:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:${VERSION}" >> $GITHUB_OUTPUT
             echo "build_args=" >> $GITHUB_OUTPUT
             echo "push=false" >> $GITHUB_OUTPUT
           fi
