@@ -137,6 +137,9 @@ The `result` output contains comma-separated post IDs from publish, like, share,
 
 Prefixed inputs per platform (e.g. `x-consumer-key`, `facebook-client-id`, `facebook-refresh-token`). The action maps these to Agoras environment variables internally (e.g. `FACEBOOK_CLIENT_ID`, `TWITTER_CONSUMER_KEY`). See [action.yml](action.yml) and [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html) for the full list.
 
+> [!TIP]
+> Standard LinkedIn apps usually return a 60-day access token and no refresh token. For standard apps, use `linkedin-access-token` instead of `linkedin-refresh-token`.
+
 `authorize`, `last-from-feed`, `random-from-feed`, and `schedule` are **not** supported by this action. Run `agoras <network> authorize` or `agoras utils …` locally when you need those flows.
 
 ## Examples
@@ -168,15 +171,15 @@ OAuth providers may rotate long-lived refresh tokens. Use the standalone `refres
 
 **Requirements**
 
-- A PAT or GitHub App installation token with **repository secrets write** permission (`AGORAS_SECRET_UPDATE_TOKEN` or any secret you map to `github-secret-update-token`).
-- Per-platform `*-refresh-token-secret-name` inputs that name the GitHub secret to update (arbitrary names — they do not have to match action input names).
-- Full unattended credentials for each platform (same inputs as posting, e.g. `facebook-client-id`, `facebook-refresh-token`, …).
+* A PAT or GitHub App installation token with **repository secrets write** permission (`AGORAS_SECRET_UPDATE_TOKEN` or any secret you map to `github-secret-update-token`).
+* Per-platform `*-refresh-token-secret-name` inputs that name the GitHub secret to update (arbitrary names — they do not have to match action input names).
+* Full unattended credentials for each platform (same inputs as posting, e.g. `facebook-client-id`, `facebook-refresh-token`, …).
 
 **Limitations**
 
-- Updated secrets apply to **future** workflow runs only; the same job cannot read newly written secrets.
-- Repository secrets only (not org/environment secrets in v1).
-- Supports YouTube, Facebook, Instagram, LinkedIn, TikTok, and Threads. X, Discord, Telegram, and WhatsApp are out of scope.
+* Updated secrets apply to **future** workflow runs only; the same job cannot read newly written secrets.
+* Repository secrets only (not org/environment secrets in v1).
+* Supports YouTube, Facebook, Instagram, LinkedIn, TikTok, and Threads. X, Discord, Telegram, and WhatsApp are out of scope.
 
 **Example (scheduled refresh)**
 
