@@ -36,7 +36,7 @@ jobs:
         uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Packages registry
-        if: startsWith(github.ref, 'refs/heads/release/')
+        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/develop'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -51,15 +51,33 @@ jobs:
             exit 1
           fi
 
+      - name: Determine Docker build parameters
+        id: docker_meta
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:develop" >> $GITHUB_OUTPUT
+            echo "build_args=AGORAS_INSTALL_SPEC=git+https://github.com/LuisAlejandro/agoras.git@develop" >> $GITHUB_OUTPUT
+            echo "push=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" =~ ^refs/heads/release/ ]]; then
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+            echo "build_args=" >> $GITHUB_OUTPUT
+            echo "push=true" >> $GITHUB_OUTPUT
+          else
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:${{ env.VERSION }}" >> $GITHUB_OUTPUT
+            echo "build_args=" >> $GITHUB_OUTPUT
+            echo "push=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Building docker image
         uses: docker/build-push-action@v7
         with:
-          tags: ghcr.io/luisalejandro/agoras-actions:${{ env.VERSION }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
           file: docker/Dockerfile
           context: docker
+          build-args: ${{ steps.docker_meta.outputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: ${{ startsWith(github.ref, 'refs/heads/release/') }}
+          push: ${{ steps.docker_meta.outputs.push }}
           load: false
 
   release-gate:

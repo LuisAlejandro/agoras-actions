@@ -129,6 +129,7 @@ class TestBuildArgv(unittest.TestCase):
                 "linkedin-client-secret": "sec",
                 "linkedin-object-id": "oid",
                 "linkedin-refresh-token": "tok",
+                "linkedin-access-token": "acc",
             },
         )
         self.assertEqual(argv, ["linkedin", "post", "--text", "hello"])
@@ -141,6 +142,7 @@ class TestBuildArgv(unittest.TestCase):
                     "linkedin-client-secret": "sec",
                     "linkedin-object-id": "oid",
                     "linkedin-refresh-token": "tok",
+                    "linkedin-access-token": "acc",
                 },
             ),
             {
@@ -148,6 +150,7 @@ class TestBuildArgv(unittest.TestCase):
                 "LINKEDIN_CLIENT_SECRET": "sec",
                 "LINKEDIN_OBJECT_ID": "oid",
                 "LINKEDIN_REFRESH_TOKEN": "tok",
+                "LINKEDIN_ACCESS_TOKEN": "acc",
             },
         )
 
@@ -304,7 +307,10 @@ class TestLoopableActions(unittest.TestCase):
             ]
         )
         self.assertEqual(mock_main.call_count, 3)
-        post_ids = [call.args[0][call.args[0].index("--post-id") + 1] for call in mock_main.call_args_list]
+        post_ids = [
+            call.args[0][call.args[0].index("--post-id") + 1]
+            for call in mock_main.call_args_list
+        ]
         self.assertEqual(post_ids, ["a", "b", "c"])
 
     @patch("agoras.cli.main.main")
@@ -415,9 +421,11 @@ class TestRefreshCredentialsRouting(unittest.TestCase):
 
     def test_refresh_filter_with_no_eligible_platforms_raises(self):
         with self.assertRaisesRegex(ValueError, "No refresh-capable platforms"):
-            run_refresh_credentials({
-                "platforms": "youtube",
-            })
+            run_refresh_credentials(
+                {
+                    "platforms": "youtube",
+                }
+            )
 
 
 class TestAgorasImportSmoke(unittest.TestCase):

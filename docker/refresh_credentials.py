@@ -12,7 +12,7 @@ from agoras.cli.utils.unattended_format import (
     load_platform_token,
 )
 from agoras.core.auth.storage import SecureTokenStorage
-from github_secrets import GitHubSecretsError, put_repository_secret
+from github_secrets import put_repository_secret
 
 REFRESH_CAPABLE_PLATFORMS = (
     "youtube",

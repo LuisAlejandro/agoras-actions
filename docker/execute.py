@@ -366,9 +366,7 @@ def run_refresh_credentials(params):
 
     requested_filter = bool(platforms_filter) or bool(network)
     if requested_filter and not eligible:
-        raise ValueError(
-            "No refresh-capable platforms matched the filter with complete credentials"
-        )
+        raise ValueError("No refresh-capable platforms matched the filter with complete credentials")
 
     return run_refresh(eligible, eligible_secrets, write_token)
 

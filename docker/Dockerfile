@@ -24,10 +24,12 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.opencontainers.image.licenses="GPL-3.0" \
       maintainer="Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
-RUN apt-get update && apt-get install -y --no-install-recommends jq \
+ARG AGORAS_INSTALL_SPEC="agoras==2.0.5"
+
+RUN apt-get update && apt-get install -y --no-install-recommends jq git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install "agoras==2.0.5" "PyNaCl"
+RUN pip3 install "${AGORAS_INSTALL_SPEC}" "PyNaCl"
 
 ADD entrypoint.sh /entrypoint.sh
 ADD execute.py /execute.py
