@@ -4,7 +4,7 @@
 
 Current version: 2.0.5
 
-> **Breaking change:** Version 2.0 aligns with [Agoras 2.0](https://agoras.luisalejandro.org/en/latest/migration.html). Input names, authentication, and CLI routing changed. See [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) before upgrading from 1.x. Each agoras-actions release pins the matching Agoras PyPI version (e.g. `@2.0.5` uses `agoras==2.0.5`).
+> **Breaking change:** Version 2.0 aligns with [Agoras 2.0](https://agoras.luisalejandro.org/en/latest/migration.html). Input names, authentication, and CLI routing changed. Read the Agoras migration guide before upgrading from 1.x. Each agoras-actions release pins the matching Agoras PyPI version (e.g. `@2.0.5` uses `agoras==2.0.5`).
 
 Agoras is a Python utility for publishing and managing posts on social networks (X, Facebook, Instagram, LinkedIn, Discord, YouTube, TikTok, Threads, Telegram, and WhatsApp).
 
@@ -54,7 +54,6 @@ Documentation:
 
 * [Agoras documentation](https://agoras.luisalejandro.org/)
 * [Agoras migration guide](https://agoras.luisalejandro.org/en/latest/migration.html)
-* [agoras-actions v2 migration](docs/MIGRATION-v2.md)
 * [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html)
 * [Contributing](CONTRIBUTING.md)
 

@@ -3,9 +3,12 @@
 
 SHELL = bash -e
 export BASH_ENV := $(HOME)/.bash_env
+
 VERSION_TYPE ?= patch
 APP_NAME ?= agoras-actions
+PROJECT_NAME ?= agoras-actions
 img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
+all_ps_hashes = $(shell docker ps -q)
 exec_on_docker = docker compose \
 	-p agoras-actions -f docker-compose.yml exec -T \
 	--user agoras-actions app
@@ -19,8 +22,16 @@ format: start
 test: start
 	@$(exec_on_docker) tox -e coverage
 
-PROJECT_NAME ?= agoras-actions
-all_ps_hashes = $(shell docker ps -q)
+dependencies:
+	@:
+
+build:
+	@docker build -f docker/Dockerfile \
+		--build-arg VERSION=$$(grep '^current_version' .bumpversion.cfg | awk '{print $$3}') \
+		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+		--build-arg VCS_REF=$$(git rev-parse --short HEAD 2>/dev/null || echo local) \
+		-t luisalejandro/agoras-actions:latest \
+		docker/
 
 image:
 	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml build \
@@ -76,21 +87,6 @@ virtualenv: start
 	@./virtualenv/bin/python3 -m pip install --upgrade wheel
 	@./virtualenv/bin/python3 -m pip install "agoras==2.0.5"
 
-dependencies:
-	@:
-
-build:
-	@docker build -f docker/Dockerfile \
-		--build-arg VERSION=$$(grep '^current_version' .bumpversion.cfg | awk '{print $$3}') \
-		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
-		--build-arg VCS_REF=$$(git rev-parse --short HEAD 2>/dev/null || echo local) \
-		-t luisalejandro/agoras-actions:latest \
-		docker/
-
-.PHONY: lint format test console functional-test virtualenv build dependencies \
-	image start stop down destroy cataplum release release-patch release-minor \
-	release-major release-preflight undo-release
-
 release:
 	@./scripts/release.sh $${VERSION_TYPE}
 
@@ -103,7 +99,6 @@ release-minor:
 release-major:
 	@./scripts/release.sh major $${APP_NAME}
 
-
 release-preflight:
 	@make image
 	@make dependencies
@@ -115,3 +110,7 @@ release-preflight:
 undo-release:
 	@: "$${VERSION:?Set VERSION=x.y.z before running make undo-release}"
 	@VERSION=$${VERSION} ./scripts/rollback.sh release
+
+.PHONY: lint format test console functional-test virtualenv build dependencies \
+	image start stop down destroy cataplum release release-patch release-minor \
+	release-major release-preflight undo-release
