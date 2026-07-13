@@ -14,10 +14,10 @@ COPY requirements-dev.txt /tmp/requirements-dev.txt
 RUN pip3 install -r /tmp/requirements-dev.txt && rm /tmp/requirements-dev.txt
 
 RUN EXISTUSER=$(getent passwd | awk -F':' '$3 == '$UID' {print $1}') && \
-    [ -n "${EXISTUSER}" ] && deluser ${EXISTUSER} || true
+    [ -n "${EXISTUSER}" ] && userdel ${EXISTUSER} || true
 
 RUN EXISTGROUP=$(getent group | awk -F':' '$3 == '$GID' {print $1}') && \
-    [ -n "${EXISTGROUP}" ] && delgroup ${EXISTGROUP} || true
+    [ -n "${EXISTGROUP}" ] && groupdel ${EXISTGROUP} || true
 
 RUN groupadd -g "${GID}" agoras-actions || true
 RUN useradd -u "${UID}" -g "${GID}" -ms /bin/bash agoras-actions
