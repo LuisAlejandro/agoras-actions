@@ -1,4 +1,4 @@
-name: agoras-actions
+name: agoras-actions (Development)
 author: Luis Alejandro Martínez Faneyth
 description: Agoras helps publish, like, share and delete posts on social networks (Agoras 2.0 native CLI). Also supports standalone OAuth credential refresh to GitHub secrets.
 inputs:
@@ -219,7 +219,7 @@ outputs:
 
 runs:
   using: docker
-  image: docker://ghcr.io/luisalejandro/agoras-actions:2.0.5
+  image: docker://ghcr.io/luisalejandro/agoras-actions:develop
   args:
     - network="${{ inputs.network }}"
     - action="${{ inputs.action }}"

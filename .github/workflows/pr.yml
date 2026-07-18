@@ -1,7 +1,7 @@
 name: Pull Request
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - ready_for_review
@@ -13,66 +13,63 @@ on:
 jobs:
   checks:
     name: Repository Checks
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout agoras-actions
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Checkout repo
+        uses: actions/checkout@v7
 
-      - name: Checkout agoras
-        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
-          repository: LuisAlejandro/agoras
-          ref: develop
-          path: agoras-src
+          python-version: "3.12"
 
-      - name: Run execute.py unit tests
+      - name: Install tox and run unit tests
         run: |
-          cd docker
-          python3 -m unittest test_execute.py -v
+          python3 -m pip install -r requirements-dev.txt
+          tox -e coverage
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+      - name: Set environment variables
+        run: |
+          echo "UID=$(id -u)" >> $GITHUB_ENV
+          echo "GID=$(id -g)" >> $GITHUB_ENV
+          echo "PROJECT_NAME=agoras-actions" >> $GITHUB_ENV
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v7
-        with:
-          tags: agoras-actions:pr-test
-          file: docker/Dockerfile
-          context: docker
-          build-contexts: |
-            agoras=./agoras-src
-          load: true
-          push: false
+      - name: Prepare CI environment file
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Build release pipeline
+        run: |
+          make image
+          make dependencies
+          make build
 
       - name: Smoke test container
-        run: docker run --rm agoras-actions:pr-test test
+        run: docker run --rm luisalejandro/agoras-actions:latest test
 
-  approve:
-    name: Approve pull request
-    runs-on: ubuntu-22.04
-    needs: checks
-    if: github.actor == github.repository_owner || github.actor == 'dependabot[bot]'
-    steps:
-      - name: Approve
-        uses: hmarr/auto-approve-action@v4.0.0
-        with:
-          github-token: "${{ github.actor == github.repository_owner && secrets.GITHUB_TOKEN || secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
+      - name: Tear down Docker
+        if: always()
+        run: make down
 
-  merge:
-    name: Merge pull request
-    runs-on: ubuntu-22.04
-    needs: approve
-    if: github.actor == github.repository_owner || github.actor == 'dependabot[bot]'
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-24.04
+    container:
+      image: semgrep/semgrep
     steps:
-      - name: Merge
-        uses: actions/github-script@v9
+      - name: Checkout repo
+        uses: actions/checkout@v7
         with:
-          github-token: "${{ github.actor == github.repository_owner && secrets.GITHUB_TOKEN || secrets.REPO_PERSONAL_ACCESS_TOKEN }}"
-          script: |
-            await github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            })
+          fetch-depth: 0
+
+      - name: Semgrep scan
+        run: |
+          BASELINE="${{ github.event.pull_request.base.sha }}"
+          semgrep scan \
+            --config p/ci \
+            --config p/python \
+            --baseline-commit "${BASELINE}" \
+            --metrics=off \
+            --error

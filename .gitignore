@@ -63,6 +63,7 @@ virtualenv/
 
 *.env
 .env.*
+secrets.env
 !.env.example
 !.env.sample
 
@@ -80,8 +81,6 @@ credentials.json
 .npmrc
 
 # Rosey Agentic Environment
-docs/plans/
-docs/designs/
 rosey/brainstorms/
 rosey/plans/
 rosey/designs/
@@ -96,3 +95,10 @@ DESIGN.md
 
 # Rosey Maintainer Tools
 rosey/maintainer-manifest.json
+rosey/hindsight-pin
+.github/copilot-instructions.md
+.github/instructions/
+.github/skills/
+.github/agents/
+.github/hooks/
+.vscode/mcp.json

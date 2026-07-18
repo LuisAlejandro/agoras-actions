@@ -1,11 +1,12 @@
-version: "3"
 services:
   app:
     image: luisalejandro/agoras-actions:latest
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     volumes:
-      - .:/home/agoras/app
-      - ../agoras:/home/agoras/agoras-src:ro
-      - ~/Library/Caches/pip:/home/agoras/.cache/pip
+      - .:/home/agoras-actions/app
+      - ~/Library/Caches/pip:/home/agoras-actions/.cache/pip

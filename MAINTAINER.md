@@ -1,94 +1,65 @@
-## Maintainer Notes
+# Maintainer Guide
 
-If you are reading this, you probably forgot how to release a new version. Keep
-reading.
+Quick reminders for Agoras.
 
-### Making a new release
+## Feature work
 
-1. Start your git flow workflow:
+1. Plan and implement on a feature branch (`feature/*` → `develop`).
+2. Run QA, lint/build, open or update a PR to `develop`.
 
-        git flow init
+Repeat until ready to ship.
 
-2. Create a new milestone in GitHub. Plan the features of your new release. Assign
-existing bugs to your new milestone.
-3. Start a new feature:
+## Commit messages
 
-        git flow feature start <feature name>
+Subjects feed `HISTORY.md` via gitchangelog, then GitHub release notes on `make release-*`.
 
-4. Code, code and code. More coding. Mess it up several times. Push to feature
-branch. Watch Travis go red. Write unit tests. Watch Travis go red again. Don't
-leave uncommitted changes.
-5. Finish your feature:
+| Tag | Section | Use for |
+| --- | ------- | ------- |
+| `[ADD]` | Added | New user-facing capability |
+| `[FIX]` | Fixed | Bug or broken behavior |
+| `[REF]` | Changed | Behavior change that is not a new feature |
+| `[DEL]` | Removed | Removal |
 
-        git flow feature finish <feature name>
+Format: `[TAG] Imperative user-facing summary.` Non-user-facing work (deps, lint, sync, CI): append `!cosmetic` / `!refactor` / `!wip`, or use a `CI:` prefix, so it is omitted from HISTORY. PR titles may stay Conventional-style; only commit subjects use these tags.
 
-6. Repeat 3-5 for every other feature you have planned for this release.
-7. When you're done with the features and ready to publish, start a new release:
+## Release
 
-        git flow release start <release number>
+From **clean** `develop`:
 
-8. Bump your version:
+| Step | Command |
+|------|-----------------|
+| Preflight | `make release-preflight` |
+| Publish | `make release-patch` (or `release-minor` / `release-major`) |
+| Rollback | `VERSION=<version> make undo-release` |
 
-        bumpversion --no-commit <major, minor or patch>
+Preflight: `make image`, `make dependencies`, `make build`, `make format`, `make lint`, `make test` (`test` = coverage).
+Release flow: `scripts/release.sh` (via Makefile `release-*` targets).
+Post-bump hooks: `.bumpversion.cfg` → `[rosey-maintainer]`.
 
-9. Update your changelog:
+## PR CI (pointers)
 
-        gitchangelog > HISTORY.md
+- **Pull Request** — `.github/workflows/pr.yml` on PRs to `develop`.
+- **Auto-merge** — `pr-auto-merge.yml` after that workflow succeeds; head
+  `feature/**` or `dependabot/**` only. Actor allowlist: `dependabot[bot]`,
+  `cursor[bot]`, `LuisAlejandro`, repository owner.
 
-10. Commit your changes to version files and changelog:
+### Auto-merge behavior
 
-        git commit -aS -m "Updating Changelog and version."
+- Binds mutations to `workflow_run.head_sha`. Stale events exit with a notice.
+- Behind base: arms native auto-merge, updates the branch with
+  `REPO_PERSONAL_ACCESS_TOKEN` + `expected_head_sha`, then waits for fresh CI.
+- Current head: native auto-merge + bot approval via `GITHUB_TOKEN`. If already
+  approved and REST+GraphQL report clean, uses SHA-guarded REST merge fallback.
+- Token boundary: PAT only on the `Update behind branch` step.
 
-11. Delete the tag made by bumpversion:
+## Before `make release-*`
 
-        git tag -d <release number>
+- Tools: `git`, git-flow, Docker (running), `make`, `gh`, bumpversion, GPG (`user.signingkey`).
+- Clean working tree (release stops if format mutates files).
 
-12. Finish your release:
+## One-time GitHub setup
 
-        git flow release finish -s -p <release number>
-
-13. Push your tags:
-
-        git push --tags
-
-14. Draft a new release in GitHub (based on the new version tag) and include
-a description. Also pick a codename because it makes you cool.
-15. Close the milestone in GitHub.
-16. Write about your new version in your blog. Tweet it, post it on facebook.
-
-### Making a new hotfix
-
-1. Create a new milestone in GitHub. Assign existing bugs to your new milestone.
-2. Start a new hotfix:
-
-        git flow hotfix start <new version>
-
-3. Code your hotfix.
-4. Bump your version:
-
-        bumpversion --no-commit <major, minor or patch>
-
-5. Update your changelog:
-
-        gitchangelog > HISTORY.md
-
-6. Commit your changes to version files and changelog:
-
-        git commit -aS -m "Updating Changelog and version."
-
-7. Delete the tag made by bumpversion:
-
-        git tag -d <new version>
-
-8. Finish your hotfix:
-
-        git flow hotfix finish -s -p <new version>
-
-9. Push your tags:
-
-        git push --tags
-
-10. Draft a new release in GitHub (based on the new version tag) and include
-a description. Don't change the codename if it is a hotfix.
-11. Close the milestone in GitHub.
-12. Write about your new version in your blog. Tweet it, post it on facebook.
+- `develop` — PR + checks from `pr.yml`.
+- `master` — restrict pushes.
+- `release/*` — `push.yml` lists `release/**` and ends with **Release Gate** (manual patch).
+- Tags — restrict creation to maintainers.

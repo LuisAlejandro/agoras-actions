@@ -1,0 +1,52 @@
+name: Publish Release
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: publish-release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  verify-release-tag:
+    name: Verify release tag
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+
+      - name: Set environment variables
+        run: |
+          echo "UID=$(id -u)" >> $GITHUB_ENV
+          echo "GID=$(id -g)" >> $GITHUB_ENV
+          echo "PROJECT_NAME=agoras-actions" >> $GITHUB_ENV
+
+      - name: Prepare CI environment file
+        run: |
+          if [ -f .env.example ]; then
+            cp .env.example .env
+          fi
+
+      - name: Build Docker image
+        run: make image
+
+      - name: Install dependencies in container
+        run: make dependencies
+
+      - name: Build production artifacts
+        run: make build
+
+      - name: Run lint
+        run: make lint
+
+      - name: Run tests
+        run: make test
+
+      - name: Tear down Docker
+        if: always()
+        run: make down
+

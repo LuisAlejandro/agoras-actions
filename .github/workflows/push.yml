@@ -5,32 +5,94 @@ on:
     branches:
       - develop
       - master
+      - "release/**"
 
 jobs:
   checks:
     name: Repository Checks
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+
+      - name: Verify Docker build pins match package version
+        run: |
+          VERSION=$(awk -F' = ' '/^current_version/{print $2}' .bumpversion.cfg)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          if ! grep -Fq "agoras==${VERSION}\"" docker/Dockerfile; then
+            echo "::error::docker/Dockerfile must pin agoras==${VERSION}"
+            exit 1
+          fi
+          if ! grep -Fq "ghcr.io/luisalejandro/agoras-actions:${VERSION}" action.yml; then
+            echo "::error::action.yml image tag must be :${VERSION} (see .bumpversion.cfg)"
+            exit 1
+          fi
+          if ! grep -Fq normalize_network docker/execute.py; then
+            echo "::error::docker/execute.py must use the 2.x platform-first router"
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Packages registry
+        if: startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/develop'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Refuse to overwrite existing GHCR tag
+        if: startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          if docker manifest inspect "ghcr.io/luisalejandro/agoras-actions:${VERSION}" >/dev/null 2>&1; then
+            echo "::error::GHCR tag :${VERSION} already exists. Published images are immutable; bump the version or use a manual push for emergencies."
+            exit 1
+          fi
+
+      - name: Determine Docker build parameters
+        id: docker_meta
+        env:
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            AGORAS_DEVELOP_SHA="$(git ls-remote https://github.com/LuisAlejandro/agoras.git refs/heads/develop | awk '{print $1}')"
+            if [ -z "$AGORAS_DEVELOP_SHA" ]; then
+              echo "::error::Unable to resolve LuisAlejandro/agoras develop"
+              exit 1
+            fi
+            echo "Resolved LuisAlejandro/agoras develop to ${AGORAS_DEVELOP_SHA}"
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:develop" >> $GITHUB_OUTPUT
+            echo "build_args=AGORAS_INSTALL_SPEC=git+https://github.com/LuisAlejandro/agoras.git@${AGORAS_DEVELOP_SHA}" >> $GITHUB_OUTPUT
+            echo "push=true" >> $GITHUB_OUTPUT
+          elif [[ "$GITHUB_REF" =~ ^refs/heads/release/ ]]; then
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:${VERSION}" >> $GITHUB_OUTPUT
+            echo "build_args=" >> $GITHUB_OUTPUT
+            echo "push=true" >> $GITHUB_OUTPUT
+          else
+            echo "tags=ghcr.io/luisalejandro/agoras-actions:${VERSION}" >> $GITHUB_OUTPUT
+            echo "build_args=" >> $GITHUB_OUTPUT
+            echo "push=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Building docker image
         uses: docker/build-push-action@v7
         with:
-          tags: ghcr.io/luisalejandro/agoras-actions:1.1.3
+          tags: ${{ steps.docker_meta.outputs.tags }}
           file: docker/Dockerfile
           context: docker
+          build-args: ${{ steps.docker_meta.outputs.build_args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          push: true
+          push: ${{ steps.docker_meta.outputs.push }}
           load: false
+
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-24.04
+    needs: [checks]
+    steps:
+      - name: Confirm all release checks passed
+        run: |
+          echo "Release gate passed for ${{ github.ref_name }}"

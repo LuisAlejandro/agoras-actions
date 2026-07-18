@@ -25,18 +25,17 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.opencontainers.image.licenses="GPL-3.0" \
       maintainer="Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
-RUN apt-get update && apt-get install -y --no-install-recommends jq \
+ARG AGORAS_INSTALL_SPEC="agoras==2.0.5"
+
+RUN apt-get update && apt-get install -y --no-install-recommends jq git \
     && rm -rf /var/lib/apt/lists/*
 
-# agoras 2.0 is not on PyPI yet. Pass the agoras repo as a named BuildKit context:
-#   docker buildx build --build-context agoras=../agoras -f docker/Dockerfile docker
-# When agoras 2.0 is published to PyPI, replace the COPY/RUN block with:
-#   RUN pip3 install "agoras>=2.0.0,<3.0.0"
-COPY --from=agoras . /tmp/agoras-source/
-RUN pip3 install /tmp/agoras-source && rm -rf /tmp/agoras-source
+RUN pip3 install "${AGORAS_INSTALL_SPEC}" "PyNaCl"
 
 ADD entrypoint.sh /entrypoint.sh
 ADD execute.py /execute.py
+ADD refresh_credentials.py /refresh_credentials.py
+ADD github_secrets.py /github_secrets.py
 
 RUN chmod +x /entrypoint.sh
 

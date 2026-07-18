@@ -2,52 +2,54 @@
 # -*- makefile -*-
 
 SHELL = bash -e
-AGORAS_SRC ?= ../agoras
-all_ps_hashes = $(shell docker ps -q)
-img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
-exec_on_docker = docker compose \
-	-p agoras-actions -f docker-compose.yml exec \
-	--user agoras app
+export BASH_ENV := $(HOME)/.bash_env
 
+VERSION_TYPE ?= patch
+APP_NAME ?= agoras-actions
+PROJECT_NAME ?= agoras-actions
+img_hash = $(shell docker images -q luisalejandro/agoras-actions:latest)
+all_ps_hashes = $(shell docker ps -q)
+exec_on_docker = docker compose \
+	-p agoras-actions -f docker-compose.yml exec -T \
+	--user agoras-actions app
+
+lint: start
+	@$(exec_on_docker) tox -e lint
+
+format: start
+	@$(exec_on_docker) tox -e format
+
+test: start
+	@$(exec_on_docker) tox -e coverage
+
+dependencies:
+	@:
+
+build:
+	@docker build -f docker/Dockerfile \
+		--build-arg VERSION=$$(grep '^current_version' .bumpversion.cfg | awk '{print $$3}') \
+		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+		--build-arg VCS_REF=$$(git rev-parse --short HEAD 2>/dev/null || echo local) \
+		-t luisalejandro/agoras-actions:latest \
+		docker/
 
 image:
-	@docker compose -p agoras-actions -f docker-compose.yml build \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml build \
 		--build-arg UID=$(shell id -u) \
 		--build-arg GID=$(shell id -g)
-
-docker-image:
-	@docker buildx build \
-		--build-context agoras=$(AGORAS_SRC) \
-		-f docker/Dockerfile \
-		docker \
-		-t ghcr.io/luisalejandro/agoras-actions:2.0.0 \
-		--load
 
 start:
 	@if [ -z "$(img_hash)" ]; then\
 		make image;\
 	fi
-	@docker compose -p agoras-actions -f docker-compose.yml up \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml up \
 		--remove-orphans --no-build --detach
 
-console: start
-	@$(exec_on_docker) bash
-
-functional-test: start
-	@$(exec_on_docker) bash test.sh
-
-virtualenv: start
-	@python3 -m venv --clear ./virtualenv
-	@./virtualenv/bin/python3 -m pip install --upgrade pip
-	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
-	@./virtualenv/bin/python3 -m pip install --upgrade wheel
-	@./virtualenv/bin/python3 -m pip install -e $(AGORAS_SRC)
-
 stop:
-	@docker-compose -p agoras-actions -f docker-compose.yml stop app
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml stop
 
 down:
-	@docker-compose -p agoras-actions -f docker-compose.yml down \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
 		--remove-orphans
 
 destroy:
@@ -56,7 +58,7 @@ destroy:
 	@echo "This will stop and delete all containers, images and volumes related to this project."
 	@echo
 	@read -p "Press ctrl+c to abort or enter to continue." -n 1 -r
-	@docker compose -p agoras-actions -f docker-compose.yml down \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
 		--rmi all --remove-orphans --volumes
 
 cataplum:
@@ -68,6 +70,47 @@ cataplum:
 	@if [ -n "$(all_ps_hashes)" ]; then\
 		docker kill $(shell docker ps -q);\
 	fi
-	@docker compose -p agoras-actions -f docker-compose.yml down \
+	@docker compose -p $(PROJECT_NAME) -f docker-compose.yml down \
 		--rmi all --remove-orphans --volumes
 	@docker system prune -a -f --volumes
+
+console: start
+	@$(exec_on_docker) bash
+
+functional-test: start
+	@$(exec_on_docker) bash test.sh
+
+virtualenv: start
+	@python3 -m venv --clear --copies ./virtualenv
+	@./virtualenv/bin/python3 -m pip install --upgrade pip
+	@./virtualenv/bin/python3 -m pip install --upgrade setuptools
+	@./virtualenv/bin/python3 -m pip install --upgrade wheel
+	@./virtualenv/bin/python3 -m pip install "agoras==2.0.5"
+
+release:
+	@./scripts/release.sh $${VERSION_TYPE}
+
+release-patch:
+	@./scripts/release.sh patch $${APP_NAME}
+
+release-minor:
+	@./scripts/release.sh minor $${APP_NAME}
+
+release-major:
+	@./scripts/release.sh major $${APP_NAME}
+
+release-preflight:
+	@make image
+	@make dependencies
+	@make build
+	@make format
+	@make lint
+	@make test
+
+undo-release:
+	@: "$${VERSION:?Set VERSION=x.y.z before running make undo-release}"
+	@VERSION=$${VERSION} ./scripts/rollback.sh release
+
+.PHONY: lint format test console functional-test virtualenv build dependencies \
+	image start stop down destroy cataplum release release-patch release-minor \
+	release-major release-preflight undo-release

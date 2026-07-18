@@ -2,183 +2,218 @@
 
 ---
 
-Current version: 1.1.3
+Current version: 2.0.5
 
-**Agoras Actions** is a [GitHub Action](https://github.com/features/actions) that wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI. Use it in workflows to publish, schedule, like, share, and delete posts on Twitter, Facebook, Instagram, and LinkedIn without installing Agoras on the runner.
+> **Breaking change:** Version 2.0 aligns with [Agoras 2.0](https://agoras.luisalejandro.org/en/latest/migration.html). Input names, authentication, and CLI routing changed. Read the Agoras migration guide before upgrading from 1.x. Each agoras-actions release pins the matching Agoras PyPI version (e.g. `@2.0.5` uses `agoras==2.0.5`).
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local development and contribution guidelines. Release history is in [HISTORY.md](HISTORY.md).
+Agoras is a Python utility for publishing and managing posts on social networks (X, Facebook, Instagram, LinkedIn, Discord, YouTube, TikTok, Threads, Telegram, and WhatsApp).
+
+This repository wraps Agoras as a GitHub Action for use in workflows.
 
 ## Usage
 
-The action name is `LuisAlejandro/agoras-actions`. Pass Agoras CLI options as action inputs (kebab-case in workflows, matching `action.yml`).
+The action is `LuisAlejandro/agoras-actions`. Required inputs are `network` and `action`. Other inputs depend on the platform and action.
 
-Example: publish a post to Facebook:
+### Post to Facebook (OAuth unattended)
 
 ```yml
-name: Publish post to facebook
+name: Publish post to Facebook
 on:
   workflow_dispatch:
 jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
+      - uses: LuisAlejandro/agoras-actions@2.0.5
         with:
           network: facebook
           action: post
-          status-text: This is a test post
-          status-image-url-1: https://placekitten.com/200/300
-          facebook-access-token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-          facebook-object-id: ${{ secrets.FACEBOOK_OBJECT_ID }}
+          text: This is a test post
+          image-1: https://placekitten.com/200/300
+          facebook-client-id: ${{ secrets.FB_CLIENT_ID }}
+          facebook-client-secret: ${{ secrets.FB_CLIENT_SECRET }}
+          facebook-refresh-token: ${{ secrets.FB_REFRESH_TOKEN }}
+          facebook-object-id: ${{ secrets.FB_PAGE_ID }}
 ```
 
-Inputs mirror Agoras command-line arguments. See the Agoras docs for network-specific behavior:
-
-- [General usage](https://agoras.readthedocs.io/en/latest/usage.html)
-- [Twitter](https://agoras.readthedocs.io/en/latest/twitter.html)
-- [Facebook](https://agoras.readthedocs.io/en/latest/facebook.html)
-- [Instagram](https://agoras.readthedocs.io/en/latest/instagram.html)
-- [LinkedIn](https://agoras.readthedocs.io/en/latest/linkedin.html)
-
-All inputs are listed in [Inputs](#inputs) below and in [`action.yml`](action.yml).
-
-## Outputs
-
-The action exposes one output, `result`, containing post IDs from publish, like, share, or delete operations. One operation may return multiple IDs (comma-separated), for example when using `last-from-feed` or `schedule` with `max-count` greater than 1.
-
-Assign an `id` to the step and reference the output in a later step:
+### Post to X
 
 ```yml
-name: Publish post to linkedin and then like it
-on:
-  workflow_dispatch:
-jobs:
-  publish-like:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
-        id: agoras
-        with:
-          network: linkedin
-          action: post
-          status-text: This is a test post
-          linkedin-access-token: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-      - uses: LuisAlejandro/agoras-actions@1.1.3
-        with:
-          network: linkedin
-          action: like
-          linkedin-post-id: ${{ steps.agoras.outputs.result }}
-          linkedin-access-token: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+- uses: LuisAlejandro/agoras-actions@2.0.5
+  with:
+    network: x
+    action: post
+    text: Hello from GitHub Actions
+    x-consumer-key: ${{ secrets.X_CONSUMER_KEY }}
+    x-consumer-secret: ${{ secrets.X_CONSUMER_SECRET }}
+    x-oauth-token: ${{ secrets.X_OAUTH_TOKEN }}
+    x-oauth-secret: ${{ secrets.X_OAUTH_SECRET }}
 ```
 
-## Inputs
+Documentation:
 
-| Input | Description |
-|-------|-------------|
-| `network` | Social network: `twitter`, `facebook`, `instagram`, or `linkedin`. |
-| `action` | Operation: `like`, `share`, `last-from-feed`, `random-from-feed`, `schedule`, `post`, or `delete`. |
-| `status-text` | Text to publish. |
-| `status-link` | Link to publish (embeds URL preview where supported). |
-| `status-image-url-1` … `status-image-url-4` | Image URLs to attach. |
-| `feed-url` | Public Atom feed URL for feed-driven actions. |
-| `max-count` | Maximum new posts to publish in one run. |
-| `post-lookback` | Only allow posts published within this window (seconds). |
-| `max-post-age` | Do not publish posts older than this many days. |
-| `twitter-consumer-key` / `twitter-consumer-secret` | Twitter app credentials. |
-| `twitter-oauth-token` / `twitter-oauth-secret` | Twitter user OAuth credentials. |
-| `tweet-id` | Twitter post ID for like, share, or delete. |
-| `facebook-access-token` | Facebook app access token. |
-| `facebook-object-id` | Facebook page or object ID for publishing. |
-| `facebook-post-id` | Facebook post ID for like, share, or delete. |
-| `facebook-profile-id` | Facebook profile ID when sharing to a profile. |
-| `instagram-access-token` | Instagram (Facebook app) access token. |
-| `instagram-object-id` | Instagram profile ID for publishing. |
-| `instagram-post-id` | Instagram post ID for like, share, or delete. |
-| `linkedin-access-token` | LinkedIn access token. |
-| `linkedin-post-id` | LinkedIn post ID for like, share, or delete. |
-| `google-sheets-client-email` | Google service account email for schedule action. |
-| `google-sheets-private-key` | Google service account private key. |
-| `google-sheets-id` | Spreadsheet ID for schedule entries. |
-| `google-sheets-name` | Sheet name containing the schedule. |
-
-## Examples
-
-Publish to LinkedIn with a link preview:
-
-```yml
-on:
-  workflow_dispatch:
-jobs:
-  publish:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
-        with:
-          network: linkedin
-          action: post
-          status-text: This is a test post
-          status-link: https://luisalejandro.org/blog/posts/nuevo-blog
-          linkedin-access-token: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-```
-
-Publish to Facebook with multiple images:
-
-```yml
-on:
-  workflow_dispatch:
-jobs:
-  publish:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
-        with:
-          network: facebook
-          action: post
-          status-text: This is a test post
-          status-image-url-1: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
-          status-image-url-2: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
-          status-image-url-3: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
-          status-image-url-4: https://pbs.twimg.com/media/Ej3d42zXsAEfDCr?format=jpg
-          facebook-access-token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-          facebook-object-id: ${{ secrets.FACEBOOK_OBJECT_ID }}
-```
-
-Publish the latest feed item to Facebook on a schedule:
-
-```yml
-on:
-  schedule:
-    - cron: 0 * * * *
-jobs:
-  publish:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: LuisAlejandro/agoras-actions@1.1.3
-        with:
-          network: facebook
-          action: last-from-feed
-          feed-url: https://luisalejandro.org/blog/posts/feed.xml
-          max-count: 1
-          post-lookback: 3600
-          facebook-access-token: ${{ secrets.FACEBOOK_ACCESS_TOKEN }}
-          facebook-object-id: ${{ secrets.FACEBOOK_OBJECT_ID }}
-```
+* [Agoras documentation](https://agoras.luisalejandro.org/)
+* [Agoras migration guide](https://agoras.luisalejandro.org/en/latest/migration.html)
+* [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html)
+* [Contributing](CONTRIBUTING.md)
 
 ## Local development
 
-Integration tests run Agoras inside Docker against credentials in `secrets.env`:
+Build and start the development container:
 
 ```bash
 make image
 make start
-cp .env.example secrets.env   # edit with test credentials
-make functional-test
 ```
 
-Use `make console` for an interactive shell in the container. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor workflow.
+Run quality checks (release preflight uses the same targets):
+
+```bash
+make lint
+make format
+make test
+```
+
+Open a shell in the container:
+
+```bash
+make console
+```
+
+Copy `.env.example` to `secrets.env` and fill in credentials for `make functional-test` when exercising live APIs.
+
+### Building the Docker image locally
+
+Build the GitHub Action runtime image (from `docker/Dockerfile`):
+
+```bash
+make build
+```
+
+The root `Dockerfile` powers day-to-day development (`make image`, `make start`, `make lint`, `make test`).
+
+## Outputs
+
+The `result` output contains comma-separated post IDs from publish, like, share, or delete operations.
+
+```yml
+- uses: LuisAlejandro/agoras-actions@2.0.5
+  id: agoras
+  with:
+    network: linkedin
+    action: post
+    text: Test post
+    linkedin-client-id: ${{ secrets.LI_CLIENT_ID }}
+    linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
+    linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
+    linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
+- uses: LuisAlejandro/agoras-actions@2.0.5
+  with:
+    network: linkedin
+    action: like
+    post-id: ${{ steps.agoras.outputs.result }}
+    linkedin-client-id: ${{ secrets.LI_CLIENT_ID }}
+    linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
+    linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
+    linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
+```
+
+## Inputs
+
+### Control
+
+* `network` — Platform for social actions: `x`, `facebook`, … (`twitter` maps to `x`). Optional when `action` is `refresh-credentials`.
+* `action` — `post`, `like`, `share`, `delete`, `video`, `template`, `refresh-credentials`
+* `github-secret-update-token`, `platforms`, `*-refresh-token-secret-name` — see [Credential refresh](#credential-refresh-github-secrets)
+
+### Content
+
+* `text`, `link`, `image-1` … `image-4`, `post-id`, `profile-id`
+* `video-url`, `video-title`, `video-description`, `video-type`, `video-caption`
+* `title`, `description`, `category-id`, `privacy`, `keywords`
+
+### Platform credentials
+
+Prefixed inputs per platform (e.g. `x-consumer-key`, `facebook-client-id`, `facebook-refresh-token`). The action maps these to Agoras environment variables internally (e.g. `FACEBOOK_CLIENT_ID`, `TWITTER_CONSUMER_KEY`). See [action.yml](action.yml) and [Platform arguments and env vars](https://agoras.luisalejandro.org/en/latest/reference/platform-arguments-envvars.html) for the full list.
+
+> [!TIP]
+> Standard LinkedIn apps usually return a 60-day access token and no refresh token. For standard apps, use `linkedin-access-token` instead of `linkedin-refresh-token`.
+
+`authorize`, `last-from-feed`, `random-from-feed`, and `schedule` are **not** supported by this action. Run `agoras <network> authorize` or `agoras utils …` locally when you need those flows.
+
+## Examples
+
+### LinkedIn post with link preview
+
+```yml
+on:
+  workflow_dispatch:
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@2.0.5
+        with:
+          network: linkedin
+          action: post
+          text: New blog post
+          link: https://luisalejandro.org/blog
+          linkedin-client-id: ${{ secrets.LI_CLIENT_ID }}
+          linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
+          linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
+          linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
+```
+
+## Credential refresh (GitHub secrets)
+
+OAuth providers may rotate long-lived refresh tokens. Use the standalone `refresh-credentials` action on a schedule (or `workflow_dispatch`) to refresh tokens and write rotated values back to **your** repository secrets.
+
+**Requirements**
+
+* A PAT or GitHub App installation token with **repository secrets write** permission (`AGORAS_SECRET_UPDATE_TOKEN` or any secret you map to `github-secret-update-token`).
+* Per-platform `*-refresh-token-secret-name` inputs that name the GitHub secret to update (arbitrary names — they do not have to match action input names).
+* Full unattended credentials for each platform (same inputs as posting, e.g. `facebook-client-id`, `facebook-refresh-token`, …).
+
+**Limitations**
+
+* Updated secrets apply to **future** workflow runs only; the same job cannot read newly written secrets.
+* Repository secrets only (not org/environment secrets in v1).
+* Supports YouTube, Facebook, Instagram, LinkedIn, TikTok, and Threads. X, Discord, Telegram, and WhatsApp are out of scope.
+
+**Example (scheduled refresh)**
+
+```yml
+name: Refresh social OAuth tokens
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-oauth-tokens
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: LuisAlejandro/agoras-actions@2.0.5
+        with:
+          action: refresh-credentials
+          github-secret-update-token: ${{ secrets.AGORAS_SECRET_UPDATE_TOKEN }}
+          facebook-client-id: ${{ secrets.FB_CLIENT_ID }}
+          facebook-client-secret: ${{ secrets.FB_CLIENT_SECRET }}
+          facebook-refresh-token: ${{ secrets.FB_REFRESH_TOKEN }}
+          facebook-object-id: ${{ secrets.FB_PAGE_ID }}
+          facebook-refresh-token-secret-name: FB_REFRESH_TOKEN
+```
+
+Use `platforms: facebook,linkedin` to limit which platforms run. Optional `network` adds another filter when set.
+
+**Security:** Restrict this workflow to `schedule` / `workflow_dispatch` on your default branch. Do not run secret-write steps on fork PRs. If OAuth refresh succeeds but GitHub write fails, update the secret manually before the next post.
 
 ## Made with 💖 and 🍔
 
 ![Banner](https://raw.githubusercontent.com/LuisAlejandro/LuisAlejandro/master/images/author-banner.svg)
 
-> Web [luisalejandro.org](http://luisalejandro.org/) · GitHub [@LuisAlejandro](https://github.com/LuisAlejandro) · Twitter [@LuisAlejandro](https://twitter.com/LuisAlejandro)
+> Web [luisalejandro.org](http://luisalejandro.org/) · GitHub [@LuisAlejandro](https://github.com/LuisAlejandro) · X [@LuisAlejandro](https://twitter.com/LuisAlejandro)

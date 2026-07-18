@@ -51,11 +51,27 @@ When proposing a feature, describe:
    make console
    ```
 
-The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `docker/execute.py`. See the [Agoras documentation](https://agoras.readthedocs.io/) for command-line behavior and supported networks.
+The action wraps the [Agoras](https://github.com/LuisAlejandro/agoras) CLI via `docker/execute.py`. See the [Agoras documentation](https://agoras.luisalejandro.org/) for command-line behavior and supported networks.
+
+To build the GitHub Action runtime image locally:
+
+```bash
+make build
+```
 
 ## Quality Checks
 
-This repository does not define `make lint` or `make test`. For integration testing against live credentials, use:
+Before opening a pull request, run:
+
+```bash
+make lint
+make format
+make test
+```
+
+These targets run inside the development container via tox (`lint`, `format`, and `coverage`).
+
+For integration testing against live credentials, use:
 
 ```bash
 make functional-test
@@ -63,12 +79,13 @@ make functional-test
 
 That target runs `test.sh` inside the Docker container. Only run it with test credentials you are comfortable using in a development environment.
 
-CI runs repository checks on pull requests to `develop` and on pushes to `develop` and `master`.
+CI runs repository checks on pull requests to `develop` (see `.github/workflows/pr.yml`). Pushes to `develop` and `master` run the push workflow for verification only (Docker build, no registry push). GHCR images are published only from `release/**` branches during the maintainer release process, and an existing tag is never overwritten automatically.
 
 ## Pull Request Guidelines
 
-- Keep changes focused on one concern.
+- Include tests for behavior changes when applicable.
 - Update documentation when user-facing behavior changes (README, `action.yml` inputs, or workflow examples).
+- Keep changes focused on one concern.
 - Link related issues when applicable.
 - Note any manual testing you performed, especially for workflow or Docker changes.
 

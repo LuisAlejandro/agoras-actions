@@ -1,15 +1,75 @@
 # Changelog
 
 
-## 2.0.0 (2026-06-08)
+## 2.0.5 (2026-06-24)
 
-### Changed
+### Other
 
-* Native Agoras 2.0 CLI routing (platform commands + utils feed-publish/schedule-run).
-* Breaking input renames: `status-text` → `text`, `tweet-id` → `post-id`, OAuth credentials for Facebook/Instagram/LinkedIn.
-* Added platforms: discord, youtube, tiktok, threads, telegram, whatsapp.
-* Added actions: `video`, `authorize`, `template`.
-* See [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) for upgrade instructions.
+* Add execute handoff regression tests and wire agoras into tox CI. [Luis Alejandro Martínez Faneyth]
+
+
+## 2.0.4 (2026-06-24)
+
+### Other
+
+* Fix agoras CLI hand-off import in execute.py. [Luis Alejandro Martínez Faneyth]
+
+
+## 2.0.2 (2026-06-24)
+
+### Other
+
+* Fixing misalignment versions bug. [Luis Alejandro Martínez Faneyth]
+
+* Fix: restore GHCR 1.1.3 image and guard push version pins. [Luis Alejandro Martínez Faneyth]
+
+* Chore: export BASH_ENV in Makefile for bash recipe env. [Luis Alejandro Martínez Faneyth]
+
+* Fix: one-line post_bump_commands for bumpversion compatibility. [Luis Alejandro Martínez Faneyth]
+
+
+## 2.0.1 (2026-06-23)
+
+### Other
+
+* Chore: sync maintainer ops and inline post_bump_commands parser. [Luis Alejandro Martínez Faneyth]
+
+* Chore: sync maintainer release scripts and CI workflows. [Luis Alejandro Martínez Faneyth]
+
+* Chore: maintainer sync toolkit 0.4.3. [Luis Alejandro Martínez Faneyth]
+
+* Update. [Luis Alejandro Martínez Faneyth]
+
+* Chore: maintainer sync toolkit 0.4.2 — PR CI + auto-merge. [Luis Alejandro Martínez Faneyth]
+
+* Add .cursorrules with Cursor Cloud dev environment instructions. [Cursor Agent]
+
+* Chore: sync PR auto-merge, CodeQL PR gate, and maintainer files from rosey-maintain. [Luis Alejandro Martínez Faneyth]
+
+
+## 2.0.0 (2026-06-21)
+
+### Other
+
+* Fixing build. [Luis Alejandro Martínez Faneyth]
+
+* Improving maintainer files. [Luis Alejandro Martínez Faneyth]
+
+* Preparing release. [Luis Alejandro Martínez Faneyth]
+
+* Preparing release. [Luis Alejandro Martínez Faneyth]
+
+* Chore: fleet release parity — gates, dependabot, hotfix removal. [Luis Alejandro Martínez Faneyth]
+
+* Apply rosey maintainer fleet sync. [Luis Alejandro Martínez Faneyth]
+
+* Adding bumpversion config. [Luis Alejandro Martínez Faneyth]
+
+* Release Agoras Actions 2.0 with PyPI-based installs and native CLI routing. [Luis Alejandro Martínez Faneyth]
+
+* Improving gitignore. [Luis Alejandro Martínez Faneyth]
+
+* Update keepalive.yml. [Luis Alejandro]
 
 
 ## 1.1.3 (2023-09-05)
