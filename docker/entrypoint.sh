@@ -24,6 +24,11 @@ fi
 
 python3 /execute.py "$@" | tee /output.log
 
-RESULT="$(cat /output.log | jq -r '.id' | xargs printf '%s,')"
-
-echo "result=${RESULT%%,}" >> $GITHUB_OUTPUT
+# Prefer last JSON object line; use .ids[] when present else .id
+JSON_LINE="$(grep -E '^\{.*\}$' /output.log | tail -n 1 || true)"
+if [ -z "${JSON_LINE}" ]; then
+  echo "No JSON result from Agoras" >&2
+  exit 1
+fi
+RESULT="$(printf '%s\n' "${JSON_LINE}" | jq -r 'if (.ids | type) == "array" then (.ids | join(",")) else .id end')"
+echo "result=${RESULT}" >> "$GITHUB_OUTPUT"

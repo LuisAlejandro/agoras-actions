@@ -50,6 +50,27 @@ jobs:
     x-oauth-secret: ${{ secrets.X_OAUTH_SECRET }}
 ```
 
+### X thread with inline entries
+
+Use `entries` with YAML (or JSON) thread posts, or pass a workspace `content-file` path instead.
+
+```yml
+- uses: LuisAlejandro/agoras-actions@2.0.5
+  with:
+    network: x
+    action: thread
+    entries: |
+      - text: First post in the thread
+      - text: Second post
+        link: https://example.com
+    x-consumer-key: ${{ secrets.X_CONSUMER_KEY }}
+    x-consumer-secret: ${{ secrets.X_CONSUMER_SECRET }}
+    x-oauth-token: ${{ secrets.X_OAUTH_TOKEN }}
+    x-oauth-secret: ${{ secrets.X_OAUTH_SECRET }}
+```
+
+The `result` output is comma-separated post IDs (one per thread entry).
+
 Documentation:
 
 * [Agoras documentation](https://agoras.luisalejandro.org/)
@@ -123,12 +144,13 @@ The `result` output contains comma-separated post IDs from publish, like, share,
 ### Control
 
 * `network` — Platform for social actions: `x`, `facebook`, … (`twitter` maps to `x`). Optional when `action` is `refresh-credentials`.
-* `action` — `post`, `like`, `share`, `delete`, `video`, `template`, `refresh-credentials`
+* `action` — `post`, `like`, `share`, `delete`, `video`, `template`, `thread`, `refresh-credentials`
 * `github-secret-update-token`, `platforms`, `*-refresh-token-secret-name` — see [Credential refresh](#credential-refresh-github-secrets)
 
 ### Content
 
 * `text`, `link`, `image-1` … `image-4`, `post-id`, `profile-id`
+* `entries`, `content-file` — for `action: thread` on `x`, `threads`, or `discord` (see below)
 * `video-url`, `video-title`, `video-description`, `video-type`, `video-caption`
 * `title`, `description`, `category-id`, `privacy`, `keywords`
 
@@ -139,7 +161,7 @@ Prefixed inputs per platform (e.g. `x-consumer-key`, `facebook-client-id`, `face
 > [!TIP]
 > Standard LinkedIn apps usually return a 60-day access token and no refresh token. For standard apps, use `linkedin-access-token` instead of `linkedin-refresh-token`.
 
-`authorize`, `last-from-feed`, `random-from-feed`, and `schedule` are **not** supported by this action. Run `agoras <network> authorize` or `agoras utils …` locally when you need those flows.
+`authorize`, `last-from-feed`, `random-from-feed`, and `schedule` are **not** supported by this action. Run `agoras <network> authorize` or `agoras utils …` locally when you need those flows. `thread` is supported for `x`, `threads`, and `discord`.
 
 ## Examples
 
