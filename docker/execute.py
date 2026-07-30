@@ -3,11 +3,15 @@
 
 import os
 import sys
+import tempfile
+
+import yaml
 
 RESERVED_KEYS = frozenset({"network", "action"})
 
 LOOPABLE_ACTIONS = frozenset({"like", "share", "delete"})
-PLATFORM_ACTIONS = frozenset({"post", "like", "share", "delete", "video", "template"})
+PLATFORM_ACTIONS = frozenset({"post", "like", "share", "delete", "video", "template", "thread"})
+THREAD_NETWORKS = frozenset({"x", "threads", "discord"})
 REFRESH_ACTION = "refresh-credentials"
 ALL_ACTIONS = PLATFORM_ACTIONS | {REFRESH_ACTION}
 
@@ -80,6 +84,8 @@ COMMON_PARAMS = frozenset(
     {
         "text",
         "link",
+        "entries",
+        "content-file",
         "image-1",
         "image-2",
         "image-3",
@@ -228,24 +234,94 @@ def split_cli_and_env_params(network, cli_params):
     return cli_only, env_vars
 
 
+def validate_thread_network(network):
+    if network not in THREAD_NETWORKS:
+        supported = ", ".join(sorted(THREAD_NETWORKS))
+        raise ValueError(
+            f'thread action is only supported for {supported}, not "{network}"'
+        )
+
+
+def parse_thread_entries(entries_raw):
+    parsed = yaml.safe_load(entries_raw)
+    if parsed is None:
+        raise ValueError("entries must not be empty")
+    if isinstance(parsed, list):
+        return parsed
+    if isinstance(parsed, dict):
+        if "entries" in parsed:
+            return parsed["entries"]
+        raise ValueError("entries document must contain an entries key or be a list")
+    raise ValueError("entries must be a YAML list or document with entries key")
+
+
+def write_thread_content_temp(entries):
+    content = {"version": 1, "entries": entries}
+    fd, path = tempfile.mkstemp(suffix=".yaml", prefix="agoras-thread-")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            yaml.dump(content, handle, default_flow_style=False)
+    except Exception:
+        os.close(fd)
+        os.unlink(path)
+        raise
+    return path
+
+
+def resolve_thread_content_file(params):
+    content_file = params.get("content-file", "").strip()
+    entries_raw = params.get("entries", "").strip()
+
+    if content_file:
+        if not os.path.isfile(content_file):
+            raise ValueError(f"content-file does not exist: {content_file}")
+        return content_file, False
+
+    if entries_raw:
+        entries = parse_thread_entries(entries_raw)
+        if not entries:
+            raise ValueError("entries must contain at least one thread entry")
+        return write_thread_content_temp(entries), True
+
+    raise ValueError('thread action requires either "entries" or "content-file"')
+
+
+def prepare_cli_and_env(network, action, params):
+    cli_params, env_vars, _temp_path = prepare_execution(network, action, params)
+    return cli_params, env_vars
+
+
+def prepare_execution(network, action, params):
+    network = normalize_network(network)
+    cli_params = translate_params(params, network, action)
+
+    if action == "thread":
+        validate_thread_network(network)
+        content_path, is_temp = resolve_thread_content_file(cli_params)
+        _cli_only, env_vars = split_cli_and_env_params(network, cli_params)
+        temp_path = content_path if is_temp else None
+        return {"content-file": content_path}, env_vars, temp_path
+
+    cli_only, env_vars = split_cli_and_env_params(network, cli_params)
+    return cli_only, env_vars, None
+
+
 def build_argv(network, action, params):
     network = normalize_network(network)
-    cli_params, _env_vars = prepare_cli_and_env(network, action, params)
+    cli_params, _env_vars, _temp_path = prepare_execution(network, action, params)
 
     argv = [network, action]
+    if action == "thread":
+        argv.extend(["--content-file", cli_params["content-file"]])
+        return argv
+
     for key, value in cli_params.items():
         argv.extend([f"--{key}", value])
     return argv
 
 
-def prepare_cli_and_env(network, action, params):
-    network = normalize_network(network)
-    cli_params = translate_params(params, network, action)
-    return split_cli_and_env_params(network, cli_params)
-
-
 def build_env(network, action, params):
-    _cli_params, env_vars = prepare_cli_and_env(network, action, params)
+    _cli_params, env_vars, _temp_path = prepare_execution(network, action, params)
     return env_vars
 
 
@@ -253,8 +329,14 @@ def execute(network, action, params):
     from agoras.cli.main import main
 
     network = normalize_network(network)
-    argv = build_argv(network, action, params)
-    env_vars = build_env(network, action, params)
+    cli_params, env_vars, temp_content_path = prepare_execution(network, action, params)
+
+    argv = [network, action]
+    if action == "thread":
+        argv.extend(["--content-file", cli_params["content-file"]])
+    else:
+        for key, value in cli_params.items():
+            argv.extend([f"--{key}", value])
 
     previous = {key: os.environ.get(key) for key in env_vars}
     try:
@@ -266,6 +348,8 @@ def execute(network, action, params):
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = previous[key]
+        if temp_content_path and os.path.exists(temp_content_path):
+            os.unlink(temp_content_path)
 
 
 def parse_payload(payload):
