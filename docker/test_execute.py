@@ -199,7 +199,7 @@ class TestThreadAction(unittest.TestCase):
                 "x-consumer-key": "key",
             },
         )
-        self.assertEqual(argv[:3], ["x", "thread", "--content-file"])
+        self.assertEqual(argv[:3], ["x", "thread", "--content"])
         content_path = argv[3]
         self.assertTrue(os.path.isfile(content_path))
         with open(content_path, encoding="utf-8") as handle:

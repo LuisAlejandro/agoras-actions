@@ -102,3 +102,4 @@ rosey/hindsight-pin
 .github/agents/
 .github/hooks/
 .vscode/
+.vscode/mcp.json

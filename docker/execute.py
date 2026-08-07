@@ -312,7 +312,7 @@ def build_argv(network, action, params):
 
     argv = [network, action]
     if action == "thread":
-        argv.extend(["--content-file", cli_params["content-file"]])
+        argv.extend(["--content", cli_params["content-file"]])
         return argv
 
     for key, value in cli_params.items():
@@ -333,7 +333,7 @@ def execute(network, action, params):
 
     argv = [network, action]
     if action == "thread":
-        argv.extend(["--content-file", cli_params["content-file"]])
+        argv.extend(["--content", cli_params["content-file"]])
     else:
         for key, value in cli_params.items():
             argv.extend([f"--{key}", value])
