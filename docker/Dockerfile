@@ -27,7 +27,12 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
 
 ARG AGORAS_INSTALL_SPEC="agoras==2.0.5"
 
-RUN apt-get update && apt-get install -y --no-install-recommends jq git \
+# The base image pins its security source to "stable-security", which now
+# resolves to trixie (Debian 13) since bookworm is oldstable. That pulls
+# jq/libjq1 from trixie (needs libc6 >= 2.38) while the image is bookworm
+# (libc6 2.36), breaking apt. Pin the security source to bookworm-security.
+RUN sed -i 's/stable-security/bookworm-security/' /etc/apt/sources.list \
+    && apt-get update && apt-get install -y --no-install-recommends jq git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install "${AGORAS_INSTALL_SPEC}" "PyNaCl"
