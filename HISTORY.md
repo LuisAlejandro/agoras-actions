@@ -1,6 +1,79 @@
 # Changelog
 
 
+## 2.1.0 (2026-08-07)
+
+### Added
+
+* Document gitchangelog commit tags and fix HISTORY.md release notes awk. [Luis Alejandro Martínez Faneyth]
+
+
+### Fixed
+
+* Add docstrings, fix pyright narrowing, and add libatomic1 for pyright. [Luis Alejandro Martínez Faneyth]
+
+* Tag test image as :test to avoid overwriting dev image. [Luis Alejandro Martínez Faneyth]
+
+* Fixing docker image bug. [Luis Alejandro Martínez Faneyth]
+
+* Retry transient GitHub API errors in PR auto-merge. [Luis Alejandro Martínez Faneyth]
+
+* Fixing content file argument name. [Luis Alejandro Martínez Faneyth]
+
+* Use top-level getOctokit in pr-auto-merge updateBranch step. [Luis Alejandro Martínez Faneyth]
+
+
+### Other
+
+* Fix(ci): pin setup-python v7 SHA and add PyYAML to tox coverage deps. [Cursor Agent]
+
+* Fix(ci): add PyYAML to tox coverage deps for test_execute imports. [Cursor Agent]
+
+* Fix(ci): add PyYAML to tox coverage test dependencies. [Cursor Agent]
+
+* Add thread action support for x, threads, and discord. [Luis Alejandro Martínez Faneyth]
+
+* Upgrade PR auto-merge to SHA-bound native-first controller. [Luis Alejandro Martínez Faneyth]
+
+* Fix: replace deluser/delgroup with userdel/groupdel in Dockerfiles. [Luis Alejandro Martínez Faneyth]
+
+* Chore: apply rosey-maintainer fleet sync. [Luis Alejandro Martínez Faneyth]
+
+* Chore: update gitignore. [Luis Alejandro Martínez Faneyth]
+
+* Fix(docker): add -y flag to apt-get install and use python3-venv. [Luis Alejandro Martínez Faneyth]
+
+* WIP: local changes before sync. [Luis Alejandro Martínez Faneyth]
+
+* Update. [Luis Alejandro Martínez Faneyth]
+
+* Fixing build. [Luis Alejandro Martínez Faneyth]
+
+* Bump. [Luis Alejandro Martínez Faneyth]
+
+* Removing unnecessary vars. [Luis Alejandro Martínez Faneyth]
+
+* Fix(ci): use env var for github.ref in push workflow run step. [Cursor Agent]
+
+* Feat: support linkedin-access-token input for standard LinkedIn apps. [Luis Alejandro Martínez Faneyth]
+
+* Feat(action): add refresh-credentials GitHub secrets sync. [Luis Alejandro Martínez Faneyth]
+
+* Fix: skip auto-merge for draft pull requests. [Luis Alejandro Martínez Faneyth]
+
+* Chore: maintainer sync follow-ups for env, docs, and Makefile. [Luis Alejandro Martínez Faneyth]
+
+* Chore: sync maintainer ops from rosey-maintainer-sync. [Luis Alejandro Martínez Faneyth]
+
+* Chore: sync maintainer ops from fleet-wide rosey-maintainer-sync. [Luis Alejandro Martínez Faneyth]
+
+* Adapting agoras-actions to new version of agoras. [Luis Alejandro Martínez Faneyth]
+
+* Chore: sync maintainer release workflow (checkout@v7) [Luis Alejandro Martínez Faneyth]
+
+* Chore: sync maintainer ops and track README version in bumpversion. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.0.5 (2026-06-24)
 
 ### Other

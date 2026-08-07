@@ -25,7 +25,7 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.opencontainers.image.licenses="GPL-3.0" \
       maintainer="Luis Alejandro Martínez Faneyth <luis@luisalejandro.org>"
 
-ARG AGORAS_INSTALL_SPEC="agoras==2.0.5"
+ARG AGORAS_INSTALL_SPEC="agoras==2.1.0"
 
 # The base image pins its security source to "stable-security", which now
 # resolves to trixie (Debian 13) since bookworm is oldstable. That pulls
