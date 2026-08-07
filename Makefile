@@ -30,7 +30,7 @@ build:
 		--build-arg VERSION=$$(grep '^current_version' .bumpversion.cfg | awk '{print $$3}') \
 		--build-arg BUILD_DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) \
 		--build-arg VCS_REF=$$(git rev-parse --short HEAD 2>/dev/null || echo local) \
-		-t luisalejandro/agoras-actions:latest \
+		-t luisalejandro/agoras-actions:test \
 		docker/
 
 image:
