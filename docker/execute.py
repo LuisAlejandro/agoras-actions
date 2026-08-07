@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""Build and run Agoras CLI commands from GitHub Actions payloads."""
+
 import os
 import sys
 import tempfile
@@ -188,12 +190,14 @@ AUTH_PARAM_ENV_VARS = {
 
 
 def normalize_network(network):
+    """Return the canonical network name, mapping legacy aliases."""
     if network == "twitter":
         return "x"
     return network
 
 
 def strip_platform_prefix(key, network):
+    """Remove the platform prefix from a parameter key."""
     prefix = PLATFORM_PREFIXES.get(network, f"{network}-")
     if key.startswith(prefix):
         return key[len(prefix) :]
@@ -201,6 +205,7 @@ def strip_platform_prefix(key, network):
 
 
 def translate_params(params, network, action):
+    """Translate raw payload params into platform CLI params."""
     normalized = {}
     for key, value in params.items():
         if key in RESERVED_KEYS or not value:
@@ -222,6 +227,7 @@ def translate_params(params, network, action):
 
 
 def split_cli_and_env_params(network, cli_params):
+    """Split CLI params into CLI-only args and environment variables."""
     env_map = AUTH_PARAM_ENV_VARS.get(network, {})
     cli_only = {}
     env_vars = {}
@@ -235,12 +241,14 @@ def split_cli_and_env_params(network, cli_params):
 
 
 def validate_thread_network(network):
+    """Raise if the network does not support the thread action."""
     if network not in THREAD_NETWORKS:
         supported = ", ".join(sorted(THREAD_NETWORKS))
         raise ValueError(f'thread action is only supported for {supported}, not "{network}"')
 
 
 def parse_thread_entries(entries_raw):
+    """Parse raw YAML thread entries into a list of entries."""
     parsed = yaml.safe_load(entries_raw)
     if parsed is None:
         raise ValueError("entries must not be empty")
@@ -254,6 +262,7 @@ def parse_thread_entries(entries_raw):
 
 
 def write_thread_content_temp(entries):
+    """Write thread entries to a temporary YAML file and return its path."""
     content = {"version": 1, "entries": entries}
     fd, path = tempfile.mkstemp(suffix=".yaml", prefix="agoras-thread-")
     try:
@@ -267,6 +276,7 @@ def write_thread_content_temp(entries):
 
 
 def resolve_thread_content_file(params):
+    """Resolve the thread content file path, creating a temp file if needed."""
     content_file = params.get("content-file", "").strip()
     entries_raw = params.get("entries", "").strip()
 
@@ -285,11 +295,13 @@ def resolve_thread_content_file(params):
 
 
 def prepare_cli_and_env(network, action, params):
+    """Return the prepared CLI params and environment variables."""
     cli_params, env_vars, _temp_path = prepare_execution(network, action, params)
     return cli_params, env_vars
 
 
 def prepare_execution(network, action, params):
+    """Prepare CLI params, env vars, and optional temp content path."""
     network = normalize_network(network)
     cli_params = translate_params(params, network, action)
 
@@ -305,6 +317,7 @@ def prepare_execution(network, action, params):
 
 
 def build_argv(network, action, params):
+    """Build the argv list for the Agoras CLI command."""
     network = normalize_network(network)
     cli_params, _env_vars, _temp_path = prepare_execution(network, action, params)
 
@@ -319,11 +332,13 @@ def build_argv(network, action, params):
 
 
 def build_env(network, action, params):
+    """Build the environment variables for the Agoras CLI command."""
     _cli_params, env_vars, _temp_path = prepare_execution(network, action, params)
     return env_vars
 
 
 def execute(network, action, params):
+    """Run the Agoras CLI command for the given network, action, and params."""
     from agoras.cli.main import main
 
     network = normalize_network(network)
@@ -342,15 +357,17 @@ def execute(network, action, params):
         main(argv)
     finally:
         for key in env_vars:
-            if previous[key] is None:
+            previous_value = previous[key]
+            if previous_value is None:
                 os.environ.pop(key, None)
             else:
-                os.environ[key] = previous[key]
+                os.environ[key] = previous_value
         if temp_content_path and os.path.exists(temp_content_path):
             os.unlink(temp_content_path)
 
 
 def parse_payload(payload):
+    """Parse a list of key=value strings into a params dict."""
     paramstore = {}
     for element in payload:
         parts = element.split("=", 1)
@@ -364,11 +381,13 @@ def parse_payload(payload):
 
 
 def validate_action(action):
+    """Raise if the action is not a supported Agoras action."""
     if action not in ALL_ACTIONS:
         raise ValueError(f'Invalid action "{action}"')
 
 
 def parse_platforms_filter(params):
+    """Parse the platforms filter param into a set of normalized names."""
     raw = params.get("platforms", "").strip()
     if not raw:
         return None
@@ -377,6 +396,7 @@ def parse_platforms_filter(params):
 
 
 def parse_secret_name_mappings(params):
+    """Parse refresh-token secret name mappings from params."""
     mappings = {}
     for platform, input_name in REFRESH_TOKEN_SECRET_NAME_INPUT.items():
         value = params.get(input_name, "").strip()
@@ -386,6 +406,7 @@ def parse_secret_name_mappings(params):
 
 
 def collect_refresh_env(params):
+    """Collect per-platform refresh environment variables from params."""
     platform_envs = {platform: {} for platform in REFRESH_CAPABLE_PLATFORMS}
     for platform in REFRESH_CAPABLE_PLATFORMS:
         prefix = PLATFORM_PREFIXES[platform]
@@ -399,11 +420,13 @@ def collect_refresh_env(params):
 
 
 def platform_refresh_complete(platform, env):
+    """Return whether the platform has all required refresh env vars."""
     required = PLATFORM_REFRESH_REQUIRED_ENV[platform]
     return all(env.get(key) for key in required)
 
 
 def mask_sensitive_values(params):
+    """Emit GitHub action masks for sensitive token values."""
     write_token = params.get("github-secret-update-token")
     if write_token:
         print(f"::add-mask::{write_token}")
@@ -416,6 +439,7 @@ def mask_sensitive_values(params):
 
 
 def run_refresh_credentials(params):
+    """Refresh platform credentials and update GitHub secrets as configured."""
     from refresh_credentials import run_refresh
 
     mask_sensitive_values(params)
@@ -454,6 +478,7 @@ def run_refresh_credentials(params):
 
 
 def run_from_payload(payload):
+    """Dispatch a payload to the appropriate action handler."""
     paramstore = parse_payload(payload)
     action = paramstore.get("action", "")
     validate_action(action)
