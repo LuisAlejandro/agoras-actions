@@ -237,9 +237,7 @@ def split_cli_and_env_params(network, cli_params):
 def validate_thread_network(network):
     if network not in THREAD_NETWORKS:
         supported = ", ".join(sorted(THREAD_NETWORKS))
-        raise ValueError(
-            f'thread action is only supported for {supported}, not "{network}"'
-        )
+        raise ValueError(f'thread action is only supported for {supported}, not "{network}"')
 
 
 def parse_thread_entries(entries_raw):

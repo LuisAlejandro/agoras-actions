@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import patch
 
 import yaml
-
 from execute import (
     REFRESH_ACTION,
     build_argv,
@@ -360,10 +359,7 @@ class TestLoopableActions(unittest.TestCase):
             ]
         )
         self.assertEqual(mock_main.call_count, 3)
-        post_ids = [
-            call.args[0][call.args[0].index("--post-id") + 1]
-            for call in mock_main.call_args_list
-        ]
+        post_ids = [call.args[0][call.args[0].index("--post-id") + 1] for call in mock_main.call_args_list]
         self.assertEqual(post_ids, ["a", "b", "c"])
 
     @patch("agoras.cli.main.main")
