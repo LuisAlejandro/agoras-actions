@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 jobs:
   publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: LuisAlejandro/agoras-actions@2.0.5
         with:
@@ -172,7 +172,7 @@ on:
   workflow_dispatch:
 jobs:
   publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: LuisAlejandro/agoras-actions@2.0.5
         with:
@@ -217,7 +217,7 @@ concurrency:
 
 jobs:
   refresh:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: LuisAlejandro/agoras-actions@2.0.5
         with:
