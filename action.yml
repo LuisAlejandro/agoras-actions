@@ -6,7 +6,7 @@ inputs:
     description: "Target platform for social actions. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x. Optional when action is refresh-credentials (may be used as an additional platform filter)."
     required: false
   action:
-    description: "Action to execute. One of: post, like, share, delete, video, template, refresh-credentials."
+    description: "Action to execute. One of: post, like, share, delete, video, template, thread, refresh-credentials."
     required: true
   github-secret-update-token:
     description: PAT or GitHub App token with repository secrets write permission. Required when any *-refresh-token-secret-name input is set.
@@ -37,6 +37,12 @@ inputs:
     required: false
   link:
     description: URL link to include in the post.
+    required: false
+  entries:
+    description: "YAML or JSON thread entries for action=thread. Full doc (version+entries) or a list of {text,link,images,...} objects. Used to build an Agoras content file."
+    required: false
+  content-file:
+    description: "Path to an Agoras content YAML file for action=thread (workspace path). Alternative to entries."
     required: false
   image-1:
     description: First image URL.
@@ -219,7 +225,7 @@ outputs:
 
 runs:
   using: docker
-  image: docker://ghcr.io/luisalejandro/agoras-actions:2.0.5
+  image: docker://ghcr.io/luisalejandro/agoras-actions:2.1.0
   args:
     - network="${{ inputs.network }}"
     - action="${{ inputs.action }}"
@@ -233,6 +239,8 @@ runs:
     - threads-refresh-token-secret-name="${{ inputs.threads-refresh-token-secret-name }}"
     - text="${{ inputs.text }}"
     - link="${{ inputs.link }}"
+    - entries="${{ inputs.entries }}"
+    - content-file="${{ inputs.content-file }}"
     - image-1="${{ inputs.image-1 }}"
     - image-2="${{ inputs.image-2 }}"
     - image-3="${{ inputs.image-3 }}"

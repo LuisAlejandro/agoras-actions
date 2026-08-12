@@ -1,6 +1,6 @@
-tox==4.56.1
+tox==4.58.0
 ruff==0.15.21
 pydocstyle==6.3.0
 bandit==1.9.4
 pyright==1.1.411
-coverage==7.15.1
+coverage==7.15.4

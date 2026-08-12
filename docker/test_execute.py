@@ -5,6 +5,7 @@ import os
 import unittest
 from unittest.mock import patch
 
+import yaml
 from execute import (
     REFRESH_ACTION,
     build_argv,
@@ -184,6 +185,57 @@ class TestBuildArgv(unittest.TestCase):
         )
 
 
+class TestThreadAction(unittest.TestCase):
+    def test_validate_action_accepts_thread(self):
+        validate_action("thread")
+
+    def test_build_argv_thread_with_entries_writes_content_file(self):
+        argv = build_argv(
+            "x",
+            "thread",
+            {
+                "entries": "- text: hello\n  link: https://example.com\n- text: world",
+                "x-consumer-key": "key",
+            },
+        )
+        self.assertEqual(argv[:3], ["x", "thread", "--content"])
+        content_path = argv[3]
+        self.assertTrue(os.path.isfile(content_path))
+        with open(content_path, encoding="utf-8") as handle:
+            data = yaml.safe_load(handle)
+        self.assertEqual(data["version"], 1)
+        self.assertEqual(len(data["entries"]), 2)
+        self.assertEqual(data["entries"][0]["text"], "hello")
+        self.assertEqual(data["entries"][0]["link"], "https://example.com")
+        os.unlink(content_path)
+
+    def test_thread_rejects_unsupported_network(self):
+        with self.assertRaisesRegex(ValueError, "thread action is only supported"):
+            build_argv("facebook", "thread", {"entries": "- text: hi"})
+
+    def test_build_env_thread_maps_x_auth(self):
+        env = build_env(
+            "x",
+            "thread",
+            {
+                "entries": "- text: hi",
+                "x-consumer-key": "key",
+                "x-consumer-secret": "sec",
+                "x-oauth-token": "tok",
+                "x-oauth-secret": "osec",
+            },
+        )
+        self.assertEqual(
+            env,
+            {
+                "TWITTER_CONSUMER_KEY": "key",
+                "TWITTER_CONSUMER_SECRET": "sec",
+                "TWITTER_OAUTH_TOKEN": "tok",
+                "TWITTER_OAUTH_SECRET": "osec",
+            },
+        )
+
+
 class TestParsePayload(unittest.TestCase):
     def test_parses_key_value_pairs(self):
         result = parse_payload(["network=x", "action=post", "text=hello"])
@@ -307,10 +359,7 @@ class TestLoopableActions(unittest.TestCase):
             ]
         )
         self.assertEqual(mock_main.call_count, 3)
-        post_ids = [
-            call.args[0][call.args[0].index("--post-id") + 1]
-            for call in mock_main.call_args_list
-        ]
+        post_ids = [call.args[0][call.args[0].index("--post-id") + 1] for call in mock_main.call_args_list]
         self.assertEqual(post_ids, ["a", "b", "c"])
 
     @patch("agoras.cli.main.main")

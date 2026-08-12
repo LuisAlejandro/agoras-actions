@@ -5,10 +5,10 @@ ARG UID=1000
 ARG GID=1000
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    sudo python3-venv git make libyaml-dev \
+    sudo python3-venv git make libyaml-dev libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install "agoras==2.0.5"
+RUN pip3 install "agoras==2.1.0"
 
 COPY requirements-dev.txt /tmp/requirements-dev.txt
 RUN pip3 install -r /tmp/requirements-dev.txt && rm /tmp/requirements-dev.txt
