@@ -47,7 +47,7 @@ jobs:
           make build
 
       - name: Smoke test container
-        run: docker run --rm luisalejandro/agoras-actions:latest test
+        run: docker run --rm luisalejandro/agoras-actions:test test
 
       - name: Tear down Docker
         if: always()
