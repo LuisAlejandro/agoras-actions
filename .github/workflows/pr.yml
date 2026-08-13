@@ -15,8 +15,67 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  filter:
+    name: Filter
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.filter.outputs.run }}
+      sphinx: ${{ steps.filter.outputs.sphinx }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect non-docs changes
+        id: filter
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          is_docs_path() {
+            local f="$1"
+            [[ "$f" == README.md || "$f" == README.rst ]] && return 0
+            [[ "$f" =~ ^LICENSE ]] && return 0
+            [[ "$f" =~ ^(HISTORY|CHANGELOG) ]] && return 0
+            [[ "$f" == docs || "$f" =~ ^docs/ ]] && return 0
+            [[ "$f" =~ ^\.github/ISSUE_TEMPLATE(/|$) ]] && return 0
+            [[ "$f" == ".github/PULL_REQUEST_TEMPLATE.md" ]] && return 0
+            return 1
+          }
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags origin "${BASE_SHA}"
+          fi
+          if ! git cat-file -e "${HEAD_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags origin "${HEAD_SHA}"
+          fi
+          files="$(git diff --name-status "${BASE_SHA}...${HEAD_SHA}" || true)"
+          run=false
+          sphinx=false
+          if [ -z "${files}" ]; then
+            run=true
+          else
+            while IFS=$'\t' read -r status p1 p2; do
+              [ -z "${status}" ] && continue
+              for f in "${p1}" "${p2}"; do
+                [ -z "${f}" ] && continue
+                [[ "$f" == docs || "$f" =~ ^docs/ ]] && sphinx=true
+                if is_docs_path "${f}"; then
+                  continue
+                fi
+                run=true
+                break 2
+              done
+            done <<< "${files}"
+          fi
+          echo "run=${run}" >> "${GITHUB_OUTPUT}"
+          echo "sphinx=${sphinx}" >> "${GITHUB_OUTPUT}"
   checks:
     name: Repository Checks
+    needs: [filter]
+    if: github.event.pull_request.draft == false && needs.filter.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -58,8 +117,20 @@ jobs:
         if: always()
         run: make down
 
+  checks-skip:
+    name: Repository Checks
+    needs: [filter]
+    if: github.event.pull_request.draft == false && needs.filter.outputs.run != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Skip docs-only changes
+        run: echo "Docs-only PR; skipping expensive checks."
+
   code-quality:
     name: Code Quality
+    needs: [filter]
+    if: github.event.pull_request.draft == false && needs.filter.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     container:
@@ -79,3 +150,13 @@ jobs:
             --baseline-commit "${BASELINE}" \
             --metrics=off \
             --error
+
+  code-quality-skip:
+    name: Code Quality
+    needs: [filter]
+    if: github.event.pull_request.draft == false && needs.filter.outputs.run != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Skip docs-only changes
+        run: echo "Docs-only PR; skipping expensive checks."
