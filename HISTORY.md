@@ -1,6 +1,25 @@
 # Changelog
 
 
+## 2.1.1 (2026-08-14)
+
+### Added
+
+* Schedule Actions cache purge every 3 days. [Luis Alejandro Martínez Faneyth]
+
+
+### Changed
+
+* Document example workflows on ubuntu-24.04. [Luis Alejandro Martínez Faneyth]
+
+
+### Other
+
+* Fix(ci): smoke-test action runtime image tagged :test. [Cursor Agent]
+
+* Chore: rebuild develop image with agoras-meta data fix. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.1.0 (2026-08-07)
 
 ### Added
