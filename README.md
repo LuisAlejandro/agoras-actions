@@ -2,7 +2,7 @@
 
 ---
 
-Current version: 2.1.0
+Current version: 2.1.1
 
 > **Breaking change:** Version 2.0 aligns with [Agoras 2.0](https://agoras.luisalejandro.org/en/latest/migration.html). Input names, authentication, and CLI routing changed. Read the Agoras migration guide before upgrading from 1.x. Each agoras-actions release pins the matching Agoras PyPI version (e.g. `@2.0.5` uses `agoras==2.0.5`).
 
