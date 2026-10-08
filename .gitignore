@@ -79,6 +79,3 @@ node_modules/
 *.pfx
 credentials.json
 .npmrc
-
-# IDEs
-.vscode/
