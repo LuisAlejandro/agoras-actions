@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""Refresh platform OAuth tokens and sync them to GitHub secrets."""
+
 import asyncio
 import os
 import shutil
@@ -79,6 +81,7 @@ def _log_status(platform, secret_name, status, reason=None):
 
 
 def extract_refresh_token_value(platform, storage):
+    """Return the stored refresh token value for a platform, if any."""
     token_data = load_platform_token(storage, platform)
     if not token_data:
         return None
@@ -92,6 +95,7 @@ def extract_refresh_token_value(platform, storage):
 
 
 def seed_platform_storage(storage, platform, env):
+    """Seed the token storage with the platform's current credentials."""
     builder = PLATFORM_TOKEN_BUILDERS[platform]
     token_data = builder(env)
     identifier = PLATFORM_IDENTIFIERS[platform](env)
@@ -171,10 +175,12 @@ async def _refresh_platform(platform, env, storage):
 
 
 def refresh_platform_token(platform, env, storage):
+    """Refresh the platform token and return the auth result."""
     return asyncio.run(_refresh_platform(platform, env, storage))
 
 
 def process_platform(platform, env, secret_name, write_token, storage):
+    """Refresh a platform token and update its GitHub secret if changed."""
     refresh_token = _refresh_token_from_env(env, platform)
     if platform == "tiktok" and refresh_token and refresh_token.startswith("access_only_"):
         _log_status(platform, secret_name, "skipped", "access_only_token")
@@ -232,6 +238,7 @@ def _refresh_token_from_env(env, platform):
 
 
 def run_refresh(platform_envs, secret_names, write_token):
+    """Refresh all eligible platforms and report per-platform status."""
     storage_dir = tempfile.mkdtemp(prefix="agoras-refresh-")
     previous_storage = os.environ.get("AGORAS_STORAGE_DIR")
     os.environ["AGORAS_STORAGE_DIR"] = storage_dir

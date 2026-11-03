@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""Encrypt and write GitHub Actions repository secrets."""
+
 import base64
 import json
 import os
@@ -41,6 +43,7 @@ def _api_request(method, url, token, payload=None):
 
 
 def encrypt_secret(public_key_b64, secret_value):
+    """Encrypt a secret value with the repository's public key."""
     public_key = public.PublicKey(public_key_b64.encode("utf-8"), encoding.Base64Encoder())
     sealed_box = public.SealedBox(public_key)
     encrypted = sealed_box.encrypt(secret_value.encode("utf-8"))
@@ -53,6 +56,7 @@ def _validate_secret_name(secret_name):
 
 
 def put_repository_secret(secret_name, secret_value, token=None, repository=None, api_url=None):
+    """Encrypt and write a repository secret via the GitHub Secrets API."""
     _validate_secret_name(secret_name)
     token = token or os.environ.get("GITHUB_SECRET_UPDATE_TOKEN", "")
     repository = repository or os.environ.get("GITHUB_REPOSITORY", "")

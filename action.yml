@@ -228,7 +228,7 @@ outputs:
 
 runs:
   using: docker
-  image: docker://ghcr.io/luisalejandro/agoras-actions:2.0.5
+  image: docker://ghcr.io/luisalejandro/agoras-actions:2.1.1
   args:
     - network="${{ inputs.network }}"
     - action="${{ inputs.action }}"

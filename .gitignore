@@ -80,25 +80,5 @@ node_modules/
 credentials.json
 .npmrc
 
-# Rosey Agentic Environment
-rosey/brainstorms/
-rosey/plans/
-rosey/designs/
-rosey/solutions/
-rosey/insights/
-rosey/design-system/
-rosey/qa/
-rosey/deepening/
-rosey/agentic-env.json
-AGENTS.md
-DESIGN.md
-
-# Rosey Maintainer Tools
-rosey/maintainer-manifest.json
-rosey/hindsight-pin
-.github/copilot-instructions.md
-.github/instructions/
-.github/skills/
-.github/agents/
-.github/hooks/
-.vscode/mcp.json
+# OS files
+.DS_Store
