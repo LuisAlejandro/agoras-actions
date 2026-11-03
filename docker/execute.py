@@ -10,7 +10,11 @@ import yaml
 RESERVED_KEYS = frozenset({"network", "action"})
 
 LOOPABLE_ACTIONS = frozenset({"like", "share", "delete"})
-PLATFORM_ACTIONS = frozenset({"post", "like", "share", "delete", "video", "template", "thread"})
+PLATFORM_ACTIONS = frozenset(
+    {"post", "like", "share", "delete", "video", "template", "thread", "get-post", "get-reply"}
+)
+READ_ACTIONS = frozenset({"get-post", "get-reply"})
+READ_UNSUPPORTED_NETWORKS = frozenset({"tiktok", "telegram", "whatsapp"})
 THREAD_NETWORKS = frozenset({"x", "threads", "discord"})
 REFRESH_ACTION = "refresh-credentials"
 ALL_ACTIONS = PLATFORM_ACTIONS | {REFRESH_ACTION}
@@ -91,6 +95,7 @@ COMMON_PARAMS = frozenset(
         "image-3",
         "image-4",
         "post-id",
+        "parent-post-id",
         "profile-id",
         "video-url",
         "video-title",
@@ -237,9 +242,21 @@ def split_cli_and_env_params(network, cli_params):
 def validate_thread_network(network):
     if network not in THREAD_NETWORKS:
         supported = ", ".join(sorted(THREAD_NETWORKS))
-        raise ValueError(
-            f'thread action is only supported for {supported}, not "{network}"'
-        )
+        raise ValueError(f'thread action is only supported for {supported}, not "{network}"')
+
+
+def validate_read_action(network, action, params):
+    if action not in READ_ACTIONS:
+        return
+    if network in READ_UNSUPPORTED_NETWORKS:
+        raise ValueError(f'"{action}" is not supported for network "{network}"')
+    post_id = (params.get("post-id") or "").strip()
+    if not post_id:
+        raise ValueError(f'"post-id" is required for action "{action}"')
+    if action == "get-reply" and network == "linkedin":
+        parent = (params.get("parent-post-id") or params.get("linkedin-parent-post-id") or "").strip()
+        if not parent:
+            raise ValueError('"parent-post-id" is required for linkedin get-reply')
 
 
 def parse_thread_entries(entries_raw):
@@ -293,6 +310,7 @@ def prepare_cli_and_env(network, action, params):
 
 def prepare_execution(network, action, params):
     network = normalize_network(network)
+    validate_read_action(network, action, params)
     cli_params = translate_params(params, network, action)
 
     if action == "thread":

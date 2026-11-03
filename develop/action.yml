@@ -6,7 +6,7 @@ inputs:
     description: "Target platform for social actions. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x. Optional when action is refresh-credentials (may be used as an additional platform filter)."
     required: false
   action:
-    description: "Action to execute. One of: post, like, share, delete, video, template, thread, refresh-credentials."
+    description: "Action to execute. One of: post, like, share, delete, video, template, thread, get-post, get-reply, refresh-credentials."
     required: true
   github-secret-update-token:
     description: PAT or GitHub App token with repository secrets write permission. Required when any *-refresh-token-secret-name input is set.
@@ -57,7 +57,10 @@ inputs:
     description: Fourth image URL.
     required: false
   post-id:
-    description: Post ID for like, share, or delete actions (comma-separated for multiple).
+    description: Post ID for like, share, delete, get-post, or get-reply actions (comma-separated for like/share/delete only).
+    required: false
+  parent-post-id:
+    description: Parent post URN for LinkedIn get-reply (required for that action).
     required: false
   profile-id:
     description: Profile ID for share actions (Facebook).
@@ -246,6 +249,7 @@ runs:
     - image-3="${{ inputs.image-3 }}"
     - image-4="${{ inputs.image-4 }}"
     - post-id="${{ inputs.post-id }}"
+    - parent-post-id="${{ inputs.parent-post-id }}"
     - profile-id="${{ inputs.profile-id }}"
     - video-url="${{ inputs.video-url }}"
     - video-title="${{ inputs.video-title }}"

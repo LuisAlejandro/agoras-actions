@@ -6,7 +6,6 @@ import unittest
 from unittest.mock import patch
 
 import yaml
-
 from execute import (
     REFRESH_ACTION,
     build_argv,
@@ -347,6 +346,50 @@ class TestValidateAction(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "schedule"):
             validate_action("schedule")
 
+    def test_accepts_get_post(self):
+        validate_action("get-post")
+
+    def test_accepts_get_reply(self):
+        validate_action("get-reply")
+
+    def test_build_argv_facebook_get_post(self):
+        argv = build_argv("facebook", "get-post", {"post-id": "123"})
+        self.assertEqual(argv, ["facebook", "get-post", "--post-id", "123"])
+
+    def test_build_argv_linkedin_get_reply_with_parent(self):
+        argv = build_argv(
+            "linkedin",
+            "get-reply",
+            {"post-id": "comment-1", "parent-post-id": "urn:li:ugcPost:456"},
+        )
+        self.assertEqual(
+            argv,
+            [
+                "linkedin",
+                "get-reply",
+                "--post-id",
+                "comment-1",
+                "--parent-post-id",
+                "urn:li:ugcPost:456",
+            ],
+        )
+
+    def test_tiktok_get_post_unsupported(self):
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            build_argv("tiktok", "get-post", {"post-id": "123"})
+
+    def test_telegram_get_reply_unsupported(self):
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            build_argv("telegram", "get-reply", {"post-id": "123"})
+
+    def test_linkedin_get_reply_requires_parent_post_id(self):
+        with self.assertRaisesRegex(ValueError, "parent-post-id"):
+            build_argv("linkedin", "get-reply", {"post-id": "comment-1"})
+
+    def test_get_post_requires_post_id(self):
+        with self.assertRaisesRegex(ValueError, "post-id"):
+            build_argv("facebook", "get-post", {})
+
 
 class TestLoopableActions(unittest.TestCase):
     @patch("agoras.cli.main.main")
@@ -360,10 +403,7 @@ class TestLoopableActions(unittest.TestCase):
             ]
         )
         self.assertEqual(mock_main.call_count, 3)
-        post_ids = [
-            call.args[0][call.args[0].index("--post-id") + 1]
-            for call in mock_main.call_args_list
-        ]
+        post_ids = [call.args[0][call.args[0].index("--post-id") + 1] for call in mock_main.call_args_list]
         self.assertEqual(post_ids, ["a", "b", "c"])
 
     @patch("agoras.cli.main.main")

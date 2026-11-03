@@ -71,6 +71,39 @@ Use `entries` with YAML (or JSON) thread posts, or pass a workspace `content-fil
 
 The `result` output is comma-separated post IDs (one per thread entry).
 
+### Read a post (get-post / get-reply)
+
+Use `get-post` or `get-reply` with `post-id` to fetch normalized content JSON. Mutating actions emit `{"id":"..."}`; read actions emit a six-key object (`id`, `text`, `media`, `author`, `created_at`, `metadata`).
+
+```yml
+- uses: LuisAlejandro/agoras-actions@2.0.5
+  with:
+    network: facebook
+    action: get-post
+    post-id: "123456789"
+    facebook-client-id: ${{ secrets.FB_CLIENT_ID }}
+    facebook-client-secret: ${{ secrets.FB_CLIENT_SECRET }}
+    facebook-refresh-token: ${{ secrets.FB_REFRESH_TOKEN }}
+    facebook-object-id: ${{ secrets.FB_PAGE_ID }}
+```
+
+LinkedIn `get-reply` also requires `parent-post-id` (ugcPost or share URN, not activity URN):
+
+```yml
+- uses: LuisAlejandro/agoras-actions@2.0.5
+  with:
+    network: linkedin
+    action: get-reply
+    post-id: comment-id
+    parent-post-id: urn:li:ugcPost:123
+    linkedin-client-id: ${{ secrets.LI_CLIENT_ID }}
+    linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
+    linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
+    linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
+```
+
+TikTok, Telegram, and WhatsApp expose these actions in the CLI but raise at runtime (see Agoras action-support matrix). `reply` and `delete-reply` are not yet wired in this Action.
+
 Documentation:
 
 * [Agoras documentation](https://agoras.luisalejandro.org/)
@@ -115,7 +148,7 @@ The root `Dockerfile` powers day-to-day development (`make image`, `make start`,
 
 ## Outputs
 
-The `result` output contains comma-separated post IDs from publish, like, share, or delete operations.
+The `result` output contains comma-separated post IDs from publish, like, share, or delete operations. For `get-post` and `get-reply`, `result` is the full normalized JSON content object as a string.
 
 ```yml
 - uses: LuisAlejandro/agoras-actions@2.0.5
