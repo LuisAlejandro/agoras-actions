@@ -158,6 +158,19 @@ class TestRefreshCredentials(unittest.TestCase):
         value = extract_refresh_token_value("threads", storage)
         self.assertEqual(value, "threads-token")
 
+    def test_seed_profile_matches_agoras_storage_rules(self):
+        storage = SecureTokenStorage()
+        seed_platform_storage(storage, "facebook", self._facebook_env())
+        identifiers = [identifier for _platform, identifier in storage.list_tokens("facebook")]
+        from agoras.core.auth import storage as token_storage
+
+        reserved = getattr(token_storage, "RESERVED_IDENTIFIERS", frozenset())
+        if "default" in reserved:
+            self.assertEqual(identifiers, ["cid@oid"])
+        else:
+            self.assertIn("default", identifiers)
+        self.assertEqual(extract_refresh_token_value("facebook", storage), "fb-refresh")
+
 
 if __name__ == "__main__":
     unittest.main()

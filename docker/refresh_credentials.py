@@ -13,6 +13,7 @@ from agoras.cli.utils.unattended_format import (
     PLATFORM_SECTION_BY_NAME,
     load_platform_token,
 )
+from agoras.core.auth import storage as token_storage
 from agoras.core.auth.storage import SecureTokenStorage
 from github_secrets import put_repository_secret
 
@@ -72,6 +73,16 @@ PLATFORM_IDENTIFIERS = {
     "threads": lambda env: env["THREADS_APP_ID"],
 }
 
+# Account half of the app@account profile. YouTube's account id is the channel
+# id, which is only known after a live API call, so YouTube stays on client id.
+COMPOSITE_PROFILE_PARTS = {
+    "facebook": ("FACEBOOK_CLIENT_ID", "FACEBOOK_OBJECT_ID"),
+    "instagram": ("INSTAGRAM_CLIENT_ID", "INSTAGRAM_OBJECT_ID"),
+    "linkedin": ("LINKEDIN_CLIENT_ID", "LINKEDIN_OBJECT_ID"),
+    "tiktok": ("TIKTOK_CLIENT_KEY", "TIKTOK_USERNAME"),
+    "threads": ("THREADS_APP_ID", "THREADS_USER_ID"),
+}
+
 
 def _log_status(platform, secret_name, status, reason=None):
     line = f"platform={platform} secret={secret_name or '-'} status={status}"
@@ -94,13 +105,41 @@ def extract_refresh_token_value(platform, storage):
     return None
 
 
+def _composite_profiles_enabled():
+    """Return whether Agoras rejects the legacy ``default`` token name."""
+    reserved = getattr(token_storage, "RESERVED_IDENTIFIERS", frozenset())
+    builder = getattr(token_storage, "build_composite_key", None)
+    return callable(builder) and "default" in reserved
+
+
+def _profile_identifier(platform, env):
+    """Return the token identifier Agoras will read back for this platform."""
+    legacy = PLATFORM_IDENTIFIERS[platform](env)
+    if not _composite_profiles_enabled():
+        return legacy
+    parts = COMPOSITE_PROFILE_PARTS.get(platform)
+    if not parts:
+        return legacy
+    app_name, account_name = parts
+    app = (env.get(app_name) or "").strip()
+    account = (env.get(account_name) or "").strip()
+    if not app or not account:
+        return legacy
+    return token_storage.build_composite_key(app, account)
+
+
 def seed_platform_storage(storage, platform, env):
-    """Seed the token storage with the platform's current credentials."""
+    """Seed the token storage with the platform's current credentials.
+
+    Agoras 2.1.1 reads a ``default`` alias first. Later builds reserve that
+    name and store one ``app@account`` profile, which refresh overwrites.
+    """
     builder = PLATFORM_TOKEN_BUILDERS[platform]
     token_data = builder(env)
-    identifier = PLATFORM_IDENTIFIERS[platform](env)
+    identifier = _profile_identifier(platform, env)
     storage.save_token(platform, identifier, token_data)
-    storage.save_token(platform, "default", token_data)
+    if not _composite_profiles_enabled():
+        storage.save_token(platform, "default", token_data)
 
 
 def _create_auth_manager(platform, env):
