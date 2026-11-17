@@ -1,6 +1,28 @@
 # Changelog
 
 
+## 3.0.0 (2026-11-17)
+
+### Added
+
+* Reply, delete-reply, and list-posts actions. [Luis Alejandro Martínez Faneyth]
+
+
+### Fixed
+
+* Seed refresh storage under app@account profiles. [Luis Alejandro Martínez Faneyth]
+
+
+### Removed
+
+* Stop automatic pull request merges. [Luis Alejandro Martínez Faneyth]
+
+
+### Other
+
+* Feat(actions): add get-post and get-reply read actions. [Luis Alejandro Martínez Faneyth]
+
+
 ## 2.1.1 (2026-08-14)
 
 ### Added
