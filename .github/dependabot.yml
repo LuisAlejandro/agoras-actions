@@ -8,6 +8,10 @@ updates:
     time: "01:00"
   cooldown:
     default-days: 14
+  groups:
+    dev-dependencies:
+      patterns:
+        - "*"
 
 - package-ecosystem: github-actions
   directory: "/"
@@ -17,3 +21,7 @@ updates:
     time: "01:00"
   cooldown:
     default-days: 14
+  groups:
+    github-actions:
+      patterns:
+        - "*"
