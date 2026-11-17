@@ -102,7 +102,61 @@ LinkedIn `get-reply` also requires `parent-post-id` (ugcPost or share URN, not a
     linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
 ```
 
-TikTok, Telegram, and WhatsApp expose these actions in the CLI but raise at runtime (see Agoras action-support matrix). `reply` and `delete-reply` are not yet wired in this Action.
+### Reply
+
+`reply` comments on an existing post. Pass `post-id` and the reply content (`text`, and where that platform accepts them, `image-1` … `image-4` or `video-url`). YouTube sends `post-id` as `--video-id`. WhatsApp also requires `whatsapp-recipient`.
+
+```yml
+- uses: LuisAlejandro/agoras-actions@3.0.0
+  with:
+    network: x
+    action: reply
+    post-id: "1234567890"
+    text: Thanks for the update
+    x-consumer-key: ${{ secrets.X_CONSUMER_KEY }}
+    x-consumer-secret: ${{ secrets.X_CONSUMER_SECRET }}
+    x-oauth-token: ${{ secrets.X_OAUTH_TOKEN }}
+    x-oauth-secret: ${{ secrets.X_OAUTH_SECRET }}
+```
+
+The `result` output is the new reply id.
+
+### Delete a reply
+
+`delete-reply` removes a reply or comment. Pass `post-id` with the reply or comment id, not the parent post. LinkedIn also requires `parent-post-id`.
+
+```yml
+- uses: LuisAlejandro/agoras-actions@3.0.0
+  with:
+    network: linkedin
+    action: delete-reply
+    post-id: comment-id
+    parent-post-id: urn:li:ugcPost:123
+    linkedin-client-id: ${{ secrets.LI_CLIENT_ID }}
+    linkedin-client-secret: ${{ secrets.LI_CLIENT_SECRET }}
+    linkedin-refresh-token: ${{ secrets.LI_REFRESH_TOKEN }}
+    linkedin-object-id: ${{ secrets.LI_OBJECT_ID }}
+```
+
+The `result` output is the deleted reply id.
+
+### List posts
+
+`list-posts` returns a JSON array of the same six-key objects. `limit` is optional and is passed as `--limit`. Facebook and Instagram also require `facebook-object-id` or `instagram-object-id`; the action sends that value as `--object-id` and as the credential environment variable.
+
+```yml
+- uses: LuisAlejandro/agoras-actions@3.0.0
+  with:
+    network: x
+    action: list-posts
+    limit: "5"
+    x-consumer-key: ${{ secrets.X_CONSUMER_KEY }}
+    x-consumer-secret: ${{ secrets.X_CONSUMER_SECRET }}
+    x-oauth-token: ${{ secrets.X_OAUTH_TOKEN }}
+    x-oauth-secret: ${{ secrets.X_OAUTH_SECRET }}
+```
+
+TikTok, Telegram, and WhatsApp expose `get-post`, `get-reply`, and `list-posts` in the CLI but raise at runtime, so this action rejects those combinations (see the Agoras action-support matrix). TikTok also has no reply backend, and neither TikTok nor WhatsApp can delete a reply.
 
 Documentation:
 
@@ -148,7 +202,7 @@ The root `Dockerfile` powers day-to-day development (`make image`, `make start`,
 
 ## Outputs
 
-The `result` output contains comma-separated post IDs from publish, like, share, or delete operations. For `get-post` and `get-reply`, `result` is the full normalized JSON content object as a string.
+The `result` output contains comma-separated post IDs from publish, reply, like, share, or delete operations. For `get-post` and `get-reply`, `result` is the full normalized JSON content object as a string. For `delete-reply` and `list-posts`, `result` is the deleted reply id and the JSON array of content objects respectively.
 
 ```yml
 - uses: LuisAlejandro/agoras-actions@2.0.5
@@ -177,12 +231,12 @@ The `result` output contains comma-separated post IDs from publish, like, share,
 ### Control
 
 * `network` — Platform for social actions: `x`, `facebook`, … (`twitter` maps to `x`). Optional when `action` is `refresh-credentials`.
-* `action` — `post`, `like`, `share`, `delete`, `video`, `template`, `thread`, `refresh-credentials`
+* `action` — `post`, `reply`, `delete-reply`, `like`, `share`, `delete`, `video`, `template`, `thread`, `get-post`, `get-reply`, `list-posts`, `refresh-credentials`
 * `github-secret-update-token`, `platforms`, `*-refresh-token-secret-name` — see [Credential refresh](#credential-refresh-github-secrets)
 
 ### Content
 
-* `text`, `link`, `image-1` … `image-4`, `post-id`, `profile-id`
+* `text`, `link`, `image-1` … `image-4`, `post-id`, `profile-id`, `parent-post-id`, `limit`
 * `entries`, `content-file` — for `action: thread` on `x`, `threads`, or `discord` (see below)
 * `video-url`, `video-title`, `video-description`, `video-type`, `video-caption`
 * `title`, `description`, `category-id`, `privacy`, `keywords`

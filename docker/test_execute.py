@@ -325,6 +325,33 @@ class TestRunFromPayload(unittest.TestCase):
         self.assertEqual(seen["argv"], ["x", "post", "--text", "hello"])
         self.assertEqual(seen["env"], "key")
 
+    @patch("agoras.cli.main.main")
+    def test_reply_invokes_main_once(self, mock_main):
+        run_from_payload(
+            [
+                "network=x",
+                "action=reply",
+                'post-id="99"',
+                'text="hello"',
+                'x-consumer-key="key"',
+            ]
+        )
+        mock_main.assert_called_once()
+        self.assertEqual(mock_main.call_args[0][0], ["x", "reply", "--post-id", "99", "--text", "hello"])
+
+    @patch("agoras.cli.main.main")
+    def test_delete_reply_invokes_main_once(self, mock_main):
+        run_from_payload(
+            [
+                "network=x",
+                "action=delete-reply",
+                'post-id="42"',
+                'x-consumer-key="key"',
+            ]
+        )
+        mock_main.assert_called_once()
+        self.assertEqual(mock_main.call_args[0][0], ["x", "delete-reply", "--post-id", "42"])
+
 
 class TestValidateAction(unittest.TestCase):
     def test_invalid_action_raises(self):
@@ -389,6 +416,140 @@ class TestValidateAction(unittest.TestCase):
     def test_get_post_requires_post_id(self):
         with self.assertRaisesRegex(ValueError, "post-id"):
             build_argv("facebook", "get-post", {})
+
+    def test_accepts_reply_and_list_posts(self):
+        validate_action("reply")
+        validate_action("delete-reply")
+        validate_action("list-posts")
+
+    def test_build_argv_x_reply_passes_text_and_media(self):
+        argv = build_argv(
+            "x",
+            "reply",
+            {
+                "post-id": "99",
+                "text": "hello",
+                "image-1": "http://img",
+                "video-url": "http://video",
+            },
+        )
+        self.assertEqual(
+            argv,
+            [
+                "x",
+                "reply",
+                "--post-id",
+                "99",
+                "--text",
+                "hello",
+                "--image-1",
+                "http://img",
+                "--video-url",
+                "http://video",
+            ],
+        )
+
+    def test_youtube_reply_maps_post_id_to_video_id(self):
+        argv = build_argv("youtube", "reply", {"post-id": "vid", "text": "nice"})
+        self.assertEqual(argv, ["youtube", "reply", "--text", "nice", "--video-id", "vid"])
+
+    def test_youtube_get_post_keeps_post_id(self):
+        argv = build_argv("youtube", "get-post", {"post-id": "vid"})
+        self.assertEqual(argv, ["youtube", "get-post", "--post-id", "vid"])
+
+    def test_reply_requires_post_id(self):
+        with self.assertRaisesRegex(ValueError, "post-id"):
+            build_argv("x", "reply", {"text": "hello"})
+
+    def test_whatsapp_reply_passes_recipient(self):
+        argv = build_argv(
+            "whatsapp",
+            "reply",
+            {"post-id": "m1", "text": "hello", "whatsapp-recipient": "+15551212"},
+        )
+        self.assertEqual(
+            argv,
+            ["whatsapp", "reply", "--post-id", "m1", "--text", "hello", "--recipient", "+15551212"],
+        )
+
+    def test_whatsapp_reply_requires_recipient(self):
+        with self.assertRaisesRegex(ValueError, "whatsapp-recipient"):
+            build_argv("whatsapp", "reply", {"post-id": "m1", "text": "hello"})
+
+    def test_build_argv_x_list_posts_with_limit(self):
+        argv = build_argv("x", "list-posts", {"limit": "5"})
+        self.assertEqual(argv, ["x", "list-posts", "--limit", "5"])
+
+    def test_build_argv_list_posts_omits_empty_limit(self):
+        argv = build_argv("linkedin", "list-posts", {})
+        self.assertEqual(argv, ["linkedin", "list-posts"])
+
+    def test_facebook_and_instagram_list_posts_pass_object_id(self):
+        cases = (
+            ("facebook", "facebook-object-id", "page123"),
+            ("instagram", "instagram-object-id", "ig123"),
+        )
+        for network, key, object_id in cases:
+            with self.subTest(network=network):
+                params = {"limit": "2", key: object_id}
+                argv = build_argv(network, "list-posts", params)
+                self.assertEqual(
+                    argv,
+                    [network, "list-posts", "--limit", "2", "--object-id", object_id],
+                )
+                env = build_env(network, "list-posts", params)
+                self.assertEqual(env[f"{network.upper()}_OBJECT_ID"], object_id)
+
+    def test_facebook_list_posts_requires_object_id(self):
+        with self.assertRaisesRegex(ValueError, "facebook-object-id"):
+            build_argv("facebook", "list-posts", {"limit": "5"})
+
+    def test_tiktok_list_posts_unsupported(self):
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            build_argv("tiktok", "list-posts", {"limit": "5"})
+
+    def test_build_argv_x_delete_reply(self):
+        argv = build_argv("x", "delete-reply", {"post-id": "42"})
+        self.assertEqual(argv, ["x", "delete-reply", "--post-id", "42"])
+
+    def test_youtube_delete_reply_keeps_post_id(self):
+        argv = build_argv("youtube", "delete-reply", {"post-id": "comment"})
+        self.assertEqual(argv, ["youtube", "delete-reply", "--post-id", "comment"])
+
+    def test_linkedin_delete_reply_passes_parent(self):
+        argv = build_argv(
+            "linkedin",
+            "delete-reply",
+            {"post-id": "comment-1", "parent-post-id": "urn:li:ugcPost:456"},
+        )
+        self.assertEqual(
+            argv,
+            ["linkedin", "delete-reply", "--post-id", "comment-1", "--parent-post-id", "urn:li:ugcPost:456"],
+        )
+
+    def test_linkedin_delete_reply_requires_parent(self):
+        with self.assertRaisesRegex(ValueError, "parent-post-id"):
+            build_argv("linkedin", "delete-reply", {"post-id": "comment-1"})
+
+    def test_delete_reply_requires_post_id(self):
+        with self.assertRaisesRegex(ValueError, "post-id"):
+            build_argv("x", "delete-reply", {})
+
+    def test_tiktok_reply_unsupported(self):
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            build_argv("tiktok", "reply", {"post-id": "1", "text": "hi"})
+
+    def test_tiktok_delete_reply_unsupported(self):
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            build_argv("tiktok", "delete-reply", {"post-id": "1"})
+
+    def test_whatsapp_delete_reply_unsupported(self):
+        with self.assertRaisesRegex(ValueError, "not supported"):
+            build_argv("whatsapp", "delete-reply", {"post-id": "1"})
+
+    def test_telegram_delete_reply_is_supported(self):
+        argv = build_argv("telegram", "delete-reply", {"post-id": "9"})
+        self.assertEqual(argv, ["telegram", "delete-reply", "--post-id", "9"])
 
 
 class TestLoopableActions(unittest.TestCase):

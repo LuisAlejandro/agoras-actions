@@ -15,7 +15,7 @@ for arg in "$@"; do
         action=refresh-credentials|action=\"refresh-credentials\")
             REFRESH_MODE=true
             ;;
-        action=get-post|action=\"get-post\"|action=get-reply|action=\"get-reply\")
+        action=get-post|action=\"get-post\"|action=get-reply|action=\"get-reply\"|action=list-posts|action=\"list-posts\")
             READ_MODE=true
             ;;
     esac
@@ -28,8 +28,8 @@ fi
 
 python3 /execute.py "$@" | tee /output.log
 
-# Prefer last JSON object line
-JSON_LINE="$(grep -E '^\{.*\}$' /output.log | tail -n 1 || true)"
+# Prefer the last JSON object or array line. list-posts prints an array.
+JSON_LINE="$(grep -E '^(\{.*\}|\[.*\])$' /output.log | tail -n 1 || true)"
 if [ -z "${JSON_LINE}" ]; then
   echo "No JSON result from Agoras" >&2
   exit 1

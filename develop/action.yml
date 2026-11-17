@@ -1,12 +1,12 @@
 name: agoras-actions (Development)
 author: Luis Alejandro Martínez Faneyth
-description: Agoras helps publish, like, share and delete posts on social networks (Agoras 2.0 native CLI). Also supports standalone OAuth credential refresh to GitHub secrets.
+description: Agoras helps publish, reply to, like, share, delete, and read posts on social networks (Agoras 2.0 native CLI). Also supports standalone OAuth credential refresh to GitHub secrets.
 inputs:
   network:
     description: "Target platform for social actions. One of: x, facebook, instagram, linkedin, discord, youtube, tiktok, threads, telegram, whatsapp. Legacy value twitter is mapped to x. Optional when action is refresh-credentials (may be used as an additional platform filter)."
     required: false
   action:
-    description: "Action to execute. One of: post, like, share, delete, video, template, thread, get-post, get-reply, refresh-credentials."
+    description: "Action to execute. One of: post, reply, delete-reply, like, share, delete, video, template, thread, get-post, get-reply, list-posts, refresh-credentials."
     required: true
   github-secret-update-token:
     description: PAT or GitHub App token with repository secrets write permission. Required when any *-refresh-token-secret-name input is set.
@@ -57,10 +57,13 @@ inputs:
     description: Fourth image URL.
     required: false
   post-id:
-    description: Post ID for like, share, delete, get-post, or get-reply actions (comma-separated for like/share/delete only).
+    description: Post ID for reply, delete-reply, like, share, delete, get-post, or get-reply (comma-separated for like/share/delete only). YouTube reply, like, and delete send this value as --video-id.
     required: false
   parent-post-id:
-    description: Parent post URN for LinkedIn get-reply (required for that action).
+    description: Parent post URN for LinkedIn get-reply and delete-reply (required for those actions).
+    required: false
+  limit:
+    description: Maximum number of posts for action=list-posts. Passed through as --limit. Omit to use the Agoras default.
     required: false
   profile-id:
     description: Profile ID for share actions (Facebook).
@@ -224,7 +227,7 @@ inputs:
 
 outputs:
   result:
-    description: Comma-separated list of published or affected post IDs.
+    description: Comma-separated post IDs for publish, like, share, delete, reply, and delete-reply. For get-post and get-reply, the normalized JSON object. For list-posts, the JSON array.
 
 runs:
   using: docker
@@ -250,6 +253,7 @@ runs:
     - image-4="${{ inputs.image-4 }}"
     - post-id="${{ inputs.post-id }}"
     - parent-post-id="${{ inputs.parent-post-id }}"
+    - limit="${{ inputs.limit }}"
     - profile-id="${{ inputs.profile-id }}"
     - video-url="${{ inputs.video-url }}"
     - video-title="${{ inputs.video-title }}"

@@ -13,10 +13,32 @@ RESERVED_KEYS = frozenset({"network", "action"})
 
 LOOPABLE_ACTIONS = frozenset({"like", "share", "delete"})
 PLATFORM_ACTIONS = frozenset(
-    {"post", "like", "share", "delete", "video", "template", "thread", "get-post", "get-reply"}
+    {
+        "post",
+        "reply",
+        "delete-reply",
+        "like",
+        "share",
+        "delete",
+        "video",
+        "template",
+        "thread",
+        "get-post",
+        "get-reply",
+        "list-posts",
+    }
 )
 READ_ACTIONS = frozenset({"get-post", "get-reply"})
+REPLY_ACTIONS = frozenset({"reply", "delete-reply"})
+# These CLIs expose the read and list commands, then raise "not supported" at runtime.
 READ_UNSUPPORTED_NETWORKS = frozenset({"tiktok", "telegram", "whatsapp"})
+# Reply backends differ: TikTok has neither reply nor delete-reply, WhatsApp
+# replies but cannot delete them. Both raise "not supported" from the wrapper.
+UNSUPPORTED_REPLY_NETWORKS = {
+    "reply": frozenset({"tiktok"}),
+    "delete-reply": frozenset({"tiktok", "whatsapp"}),
+}
+LIST_OBJECT_ID_NETWORKS = frozenset({"facebook", "instagram"})
 THREAD_NETWORKS = frozenset({"x", "threads", "discord"})
 REFRESH_ACTION = "refresh-credentials"
 ALL_ACTIONS = PLATFORM_ACTIONS | {REFRESH_ACTION}
@@ -98,6 +120,7 @@ COMMON_PARAMS = frozenset(
         "image-4",
         "post-id",
         "parent-post-id",
+        "limit",
         "profile-id",
         "video-url",
         "video-title",
@@ -225,7 +248,7 @@ def translate_params(params, network, action):
         else:
             translated[strip_platform_prefix(key, network)] = value
 
-    if network == "youtube" and action in ("like", "delete") and "post-id" in translated:
+    if network == "youtube" and action in ("like", "delete", "reply") and "post-id" in translated:
         translated["video-id"] = translated.pop("post-id")
 
     return translated
@@ -252,18 +275,66 @@ def validate_thread_network(network):
         raise ValueError(f'thread action is only supported for {supported}, not "{network}"')
 
 
+def require_post_id(action, params):
+    """Raise if the payload carries no post, reply, or comment identifier."""
+    post_id = (params.get("post-id") or "").strip()
+    if not post_id:
+        raise ValueError(f'"post-id" is required for action "{action}"')
+
+
+def require_linkedin_parent(action, params):
+    """Raise if a LinkedIn comment action is missing its parent post URN."""
+    parent = (params.get("parent-post-id") or params.get("linkedin-parent-post-id") or "").strip()
+    if not parent:
+        raise ValueError(f'"parent-post-id" is required for linkedin {action}')
+
+
 def validate_read_action(network, action, params):
+    """Raise if a get-post or get-reply payload is missing a required identifier."""
     if action not in READ_ACTIONS:
         return
     if network in READ_UNSUPPORTED_NETWORKS:
         raise ValueError(f'"{action}" is not supported for network "{network}"')
-    post_id = (params.get("post-id") or "").strip()
-    if not post_id:
-        raise ValueError(f'"post-id" is required for action "{action}"')
+    require_post_id(action, params)
     if action == "get-reply" and network == "linkedin":
-        parent = (params.get("parent-post-id") or params.get("linkedin-parent-post-id") or "").strip()
-        if not parent:
-            raise ValueError('"parent-post-id" is required for linkedin get-reply')
+        require_linkedin_parent(action, params)
+
+
+def validate_list_action(network, action):
+    """Raise if list-posts is not supported for the network."""
+    if action != "list-posts":
+        return
+    if network in READ_UNSUPPORTED_NETWORKS:
+        raise ValueError(f'"{action}" is not supported for network "{network}"')
+
+
+def validate_reply_action(network, action, params):
+    """Raise if a reply or delete-reply payload is missing a required identifier."""
+    if action not in REPLY_ACTIONS:
+        return
+    if network in UNSUPPORTED_REPLY_NETWORKS[action]:
+        raise ValueError(f'"{action}" is not supported for network "{network}"')
+    require_post_id(action, params)
+    if action == "delete-reply" and network == "linkedin":
+        require_linkedin_parent(action, params)
+    if action == "reply" and network == "whatsapp":
+        recipient = (params.get("whatsapp-recipient") or params.get("recipient") or "").strip()
+        if not recipient:
+            raise ValueError('"whatsapp-recipient" is required for whatsapp reply')
+
+
+def require_list_object_id(network, action, cli_params, cli_only):
+    """Copy object-id onto the CLI for networks whose list-posts flag is required.
+
+    Facebook and Instagram credentials also travel as environment variables.
+    Their list-posts parsers still require ``--object-id``.
+    """
+    if action != "list-posts" or network not in LIST_OBJECT_ID_NETWORKS:
+        return
+    object_id = (cli_params.get("object-id") or "").strip()
+    if not object_id:
+        raise ValueError(f'"{network}-object-id" is required for {network} list-posts')
+    cli_only["object-id"] = object_id
 
 
 def parse_thread_entries(entries_raw):
@@ -323,6 +394,8 @@ def prepare_execution(network, action, params):
     """Prepare CLI params, env vars, and optional temp content path."""
     network = normalize_network(network)
     validate_read_action(network, action, params)
+    validate_list_action(network, action)
+    validate_reply_action(network, action, params)
     cli_params = translate_params(params, network, action)
 
     if action == "thread":
@@ -333,6 +406,7 @@ def prepare_execution(network, action, params):
         return {"content-file": content_path}, env_vars, temp_path
 
     cli_only, env_vars = split_cli_and_env_params(network, cli_params)
+    require_list_object_id(network, action, cli_params, cli_only)
     return cli_only, env_vars, None
 
 
